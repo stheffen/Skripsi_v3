@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { History, AlertTriangle, CheckCircle, TrendingDown, ChevronRight, ChevronDown, BookX } from 'lucide-react';
 import Link from 'next/link';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import dynamic from 'next/dynamic';
+
+const RiwayatLineChart = dynamic(
+  () => import('@/components/charts/RiwayatLineChart'),
+  { ssr: false, loading: () => <div className="h-[180px] w-full flex items-center justify-center text-slate-500 text-sm animate-pulse">Memuat grafik...</div> }
+);
 
 function RiskBadge({ kategori }: { kategori: string }) {
   const map: Record<string, any> = {
@@ -138,19 +143,7 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
                 Tren IPS & IPK
               </h3>
-              <ResponsiveContainer width="100%" height={180}>
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 4]} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, fontSize: 11 }}
-                    formatter={(v: any, name: any) => [v?.toFixed(2), name]}
-                  />
-                  <Line type="monotone" dataKey="IPS" stroke="#3b82f6" strokeWidth={2.5} dot={{ fill: '#3b82f6', r: 4, strokeWidth: 2, stroke: '#0f172a' }} />
-                  <Line type="monotone" dataKey="IPK" stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 4, strokeWidth: 2, stroke: '#0f172a' }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <RiwayatLineChart data={trendData} />
               <div className="flex items-center gap-4 mt-3 justify-center">
                 <span className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                   <div className="w-3 h-1 bg-blue-500 rounded" /> IPS

@@ -5,51 +5,67 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { AlertTriangle, Eye, EyeOff, LogIn } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Email wajib diisi").email({ message: "Format email tidak valid" }),
+  password: z.string().min(1, "Password wajib diisi")
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' }
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
     setError('');
-    setLoading(true);
     
     try {
       const res = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
       if (res?.error) {
         setError(res.error);
       } else {
-        // NextAuth will handle the session. We just need to navigate to dashboard
-        router.push('/dashboard'); // We can conditionally route later based on session
+        router.push('/dashboard');
         router.refresh();
       }
     } catch (err: any) {
       setError('Login gagal. Periksa email dan password.');
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
       {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-slate-900 via-blue-950 to-slate-950 items-center justify-center p-12 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl" />
         </div>
         <div className="relative z-10 max-w-md text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
+          <div className="w-20 h-20 bg-linear-to-br from-blue-500 to-blue-700 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
             <AlertTriangle size={36} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
@@ -61,10 +77,10 @@ export default function Login() {
           </p>
           <div className="mt-8 grid grid-cols-3 gap-4">
             {[['52', 'Mata Kuliah'], ['27', 'Fuzzy Rules'], ['14', 'Semester']].map(([val, label]) => (
-              <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <Card key={label} className="bg-white/5 border-white/10 rounded-xl p-4">
                 <p className="text-2xl font-bold text-blue-400">{val}</p>
                 <p className="text-xs text-slate-500 mt-1">{label}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -74,7 +90,7 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
               <AlertTriangle size={20} className="text-white" />
             </div>
             <div>
@@ -88,35 +104,33 @@ export default function Login() {
 
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
-              <AlertTriangle size={16} className="flex-shrink-0" />
+              <AlertTriangle size={16} className="shrink-0" />
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-              <input
-                name="email"
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <Input
+                id="email"
                 type="email"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                {...register('email')}
+                className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="nama@email.com"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                required
               />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-slate-300">Password</Label>
               <div className="relative">
-                <input
-                  name="password"
+                <Input
+                  id="password"
                   type={showPass ? 'text' : 'password'}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pr-12 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  {...register('password')}
+                  className={`bg-slate-950 border-slate-800 pr-12 text-slate-300 focus-visible:ring-blue-500 ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="Minimal 8 karakter"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  required
                 />
                 <button
                   type="button"
@@ -126,21 +140,23 @@ export default function Login() {
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
             </div>
-            <button
+
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <LogIn size={18} />
+                  <LogIn size={18} className="mr-2" />
                   Masuk
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-slate-400 mt-6">
@@ -151,14 +167,14 @@ export default function Login() {
           </p>
 
           {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+          <Card className="mt-6 p-4 bg-slate-800/50 border-slate-700/50">
             <p className="text-xs font-semibold text-slate-400 mb-2">🔑 Akun Demo:</p>
             <div className="space-y-1 text-xs text-slate-500">
               <p>Mahasiswa: <span className="text-slate-300">mahasiswa@demo.com</span></p>
               <p>Dosen: <span className="text-slate-300">dosen@demo.com</span></p>
               <p>Password: <span className="text-slate-300">password</span></p>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

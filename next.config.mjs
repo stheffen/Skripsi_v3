@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  reactCompiler: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'zod', 'recharts'],
+  },
+};
 
 export default nextConfig;

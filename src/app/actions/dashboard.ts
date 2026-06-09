@@ -4,12 +4,7 @@ import { AkademikService } from "@/services/akademikService";
 const prisma = new PrismaClient();
 
 export async function getDashboardData(userId: number, semesterAktif: number) {
-  const ipk = await AkademikService.hitungIPK(userId);
-  const ips = await AkademikService.hitungIPS(userId, semesterAktif);
-  const mk_bermasalah = await AkademikService.hitungMKBermasalah(userId);
-  const total_sks_tempuh = await AkademikService.hitungTotalSKSTempuh(userId);
-  const total_sks_lulus = await AkademikService.hitungTotalSKSLulus(userId);
-  const statistik_semester = await AkademikService.statistikPerSemester(userId);
+  const summary = await AkademikService.getAkademikSummary(userId, semesterAktif);
 
   // Latest analysis
   const risiko = await prisma.analisisRisiko.findFirst({
@@ -17,24 +12,24 @@ export async function getDashboardData(userId: number, semesterAktif: number) {
     orderBy: { created_at: 'desc' },
   });
 
-  const tren_ips = statistik_semester.map((stat: any) => ({
+  const tren_ips = summary.statistik_semester.map((stat: any) => ({
     semester: `Sem ${stat.semester}`,
     ips: stat.ips,
   }));
 
   return {
     akademik: {
-      ipk,
-      ips,
-      mk_bermasalah,
-      total_sks_tempuh,
-      total_sks_lulus,
+      ipk: summary.ipk,
+      ips: summary.ips,
+      mk_bermasalah: summary.mk_bermasalah,
+      total_sks_tempuh: summary.total_sks_tempuh,
+      total_sks_lulus: summary.total_sks_lulus,
     },
     risiko: risiko ? {
       ...risiko,
       tanggal: risiko.created_at.toISOString().split('T')[0],
     } : null,
-    statistik_semester,
+    statistik_semester: summary.statistik_semester,
     tren_ips,
   };
 }

@@ -63,7 +63,7 @@ export default function DosenMahasiswaClient({ mahasiswaList }: { mahasiswaList:
                 className="w-full flex flex-col sm:flex-row sm:items-center gap-4 p-5 hover:bg-slate-800/30 transition text-left"
               >
                 <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg">
                     {m.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

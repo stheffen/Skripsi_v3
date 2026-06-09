@@ -57,7 +57,7 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
         {/* Logo */}
         <div className="flex items-center justify-between p-5 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-9 h-9 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
               <AlertTriangle size={18} className="text-white" />
             </div>
             <div>
@@ -73,7 +73,7 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
         {/* User info */}
         <div className="p-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {user?.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div className="min-w-0">

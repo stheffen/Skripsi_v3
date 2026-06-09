@@ -1,48 +1,114 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { AlertTriangle, Eye, EyeOff, UserPlus } from 'lucide-react';
-import { registerUser } from '@/app/actions/auth';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { AlertTriangle, Eye, EyeOff, UserPlus } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { registerUser } from "@/app/actions/auth";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+const registerSchema = z
+  .object({
+    role: z.enum(["mahasiswa", "dosen"]),
+    name: z.string().min(1, "Nama wajib diisi"),
+    email: z
+      .string()
+      .min(1, "Email wajib diisi")
+      .email({ message: "Format email tidak valid" }),
+    password: z.string().min(8, "Password minimal 8 karakter"),
+    password_confirmation: z.string().min(1, "Konfirmasi password wajib diisi"),
+    nim: z.string().optional(),
+    angkatan: z.string().optional(),
+    semester_aktif: z.string().optional(),
+    phone: z.string().optional(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Password tidak cocok",
+    path: ["password_confirmation"],
+  })
+  .refine(
+    (data) => {
+      if (data.role === "mahasiswa") {
+        return !!data.nim;
+      }
+      return true;
+    },
+    {
+      message: "NIM wajib diisi untuk mahasiswa",
+      path: ["nim"],
+    },
+  );
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const [role, setRole] = useState('mahasiswa');
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: "mahasiswa",
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+      nim: "",
+      angkatan: "",
+      semester_aktif: "1",
+      phone: "",
+    },
+  });
 
-    const formData = new FormData(e.currentTarget);
-    formData.append('role', role);
+  const selectedRole = watch("role");
 
-    const res = await registerUser(formData);
+  const onSubmit = async (data: RegisterFormValues) => {
+    setError("");
 
-    if (res.error) {
-      setError(res.error);
-      setLoading(false);
-      return;
-    }
-
-    // Auto login
-    const signInRes = await signIn("credentials", {
-      email: formData.get("email"),
-      password: formData.get("password"),
-      redirect: false,
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value);
+      }
     });
 
-    if (signInRes?.error) {
-      setError("Login gagal setelah registrasi");
-      setLoading(false);
-    } else {
-      router.push(role === 'dosen' ? '/dosen/dashboard' : '/dashboard');
-      router.refresh();
+    try {
+      const res = await registerUser(formData);
+
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+
+      // Auto login
+      const signInRes = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (signInRes?.error) {
+        setError("Login gagal setelah registrasi");
+      } else {
+        router.push(data.role === "dosen" ? "/dosen/dashboard" : "/dashboard");
+        router.refresh();
+      }
+    } catch (err) {
+      setError("Terjadi kesalahan sistem saat mendaftar");
     }
   };
 
@@ -50,7 +116,7 @@ export default function Register() {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
       <div className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
             <AlertTriangle size={20} className="text-white" />
           </div>
           <div>
@@ -59,9 +125,11 @@ export default function Register() {
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+        <Card className="bg-slate-900 border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
           <h2 className="text-2xl font-bold text-slate-100 mb-1">Buat Akun</h2>
-          <p className="text-slate-400 text-sm mb-6">Daftar untuk mengakses sistem</p>
+          <p className="text-slate-400 text-sm mb-6">
+            Daftar untuk mengakses sistem
+          </p>
 
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
@@ -69,22 +137,26 @@ export default function Register() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Daftar Sebagai</label>
+              <Label className="block text-slate-300 mb-2">
+                Daftar Sebagai
+              </Label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  ['mahasiswa', 'Mahasiswa'],
-                  ['dosen', 'Dosen PA'],
+                  ["mahasiswa", "Mahasiswa"],
+                  ["dosen", "Dosen PA"],
                 ].map(([val, label]) => (
                   <button
                     key={val}
                     type="button"
-                    onClick={() => setRole(val)}
+                    onClick={() =>
+                      setValue("role", val as "mahasiswa" | "dosen")
+                    }
                     className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                      role === val
-                        ? 'bg-blue-600/20 border-blue-500 text-blue-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                      selectedRole === val
+                        ? "bg-blue-600/20 border-blue-500 text-blue-300"
+                        : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600"
                     }`}
                   >
                     {label}
@@ -94,71 +166,168 @@ export default function Register() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-1">Nama Lengkap</label>
-                <input name="name" type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Nama lengkap" required />
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label htmlFor="name" className="text-slate-300">
+                  Nama Lengkap
+                </Label>
+                <Input
+                  id="name"
+                  {...register("name")}
+                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.name ? "border-red-500" : ""}`}
+                  placeholder="Nama lengkap"
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-500">{errors.name.message}</p>
+                )}
               </div>
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-                <input name="email" type="email" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="nama@email.com" required />
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label htmlFor="email" className="text-slate-300">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.email ? "border-red-500" : ""}`}
+                  placeholder="nama@email.com"
+                />
+                {errors.email && (
+                  <p className="text-xs text-red-500">{errors.email.message}</p>
+                )}
               </div>
 
-              {role === 'mahasiswa' && (
+              {selectedRole === "mahasiswa" && (
                 <>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">NIM</label>
-                    <input name="nim" type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Nomor Induk Mahasiswa" required />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="nim" className="text-slate-300">
+                      NIM
+                    </Label>
+                    <Input
+                      id="nim"
+                      {...register("nim")}
+                      className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.nim ? "border-red-500" : ""}`}
+                      placeholder="Nomor Induk Mahasiswa"
+                    />
+                    {errors.nim && (
+                      <p className="text-xs text-red-500">
+                        {errors.nim.message}
+                      </p>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Angkatan</label>
-                    <input name="angkatan" type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Contoh: 2022" />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="angkatan" className="text-slate-300">
+                      Angkatan
+                    </Label>
+                    <Input
+                      id="angkatan"
+                      {...register("angkatan")}
+                      className="bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500"
+                      placeholder="Contoh: 2022"
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Semester Aktif</label>
-                    <select name="semester_aktif" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                      {Array.from({ length: 14 }, (_, i) => i + 1).map(s => (
-                        <option key={s} value={s}>Semester {s}</option>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="semester_aktif" className="text-slate-300">
+                      Semester Aktif
+                    </Label>
+                    <select
+                      id="semester_aktif"
+                      {...register("semester_aktif")}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-md h-9 px-3 text-sm text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    >
+                      {Array.from({ length: 14 }, (_, i) => i + 1).map((s) => (
+                        <option key={s} value={String(s)}>
+                          Semester {s}
+                        </option>
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">No. HP (opsional)</label>
-                    <input name="phone" type="text" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="08xxxxxxxxxx" />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-slate-300">
+                      No. HP (opsional)
+                    </Label>
+                    <Input
+                      id="phone"
+                      {...register("phone")}
+                      className="bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500"
+                      placeholder="08xxxxxxxxxx"
+                    />
                   </div>
                 </>
               )}
 
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label htmlFor="password" className="text-slate-300">
+                  Password
+                </Label>
                 <div className="relative">
-                  <input name="password" type={showPass ? 'text' : 'password'} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pr-12 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Minimal 8 karakter" required />
-                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                  <Input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    {...register("password")}
+                    className={`bg-slate-950 border-slate-800 pr-12 text-slate-300 focus-visible:ring-blue-500 ${errors.password ? "border-red-500" : ""}`}
+                    placeholder="Minimal 8 karakter"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  >
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-1">Konfirmasi Password</label>
-                <input name="password_confirmation" type={showPass ? 'text' : 'password'} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Ulangi password" required />
+              <div className="sm:col-span-2 space-y-1.5">
+                <Label
+                  htmlFor="password_confirmation"
+                  className="text-slate-300"
+                >
+                  Konfirmasi Password
+                </Label>
+                <Input
+                  id="password_confirmation"
+                  type={showPass ? "text" : "password"}
+                  {...register("password_confirmation")}
+                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.password_confirmation ? "border-red-500" : ""}`}
+                  placeholder="Ulangi password"
+                />
+                {errors.password_confirmation && (
+                  <p className="text-xs text-red-500">
+                    {errors.password_confirmation.message}
+                  </p>
+                )}
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">
-              {loading ? (
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
+            >
+              {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <><UserPlus size={18} /> Daftar Sekarang</>
+                <>
+                  <UserPlus size={18} className="mr-2" /> Daftar Sekarang
+                </>
               )}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-slate-400 mt-6">
-            Sudah punya akun?{' '}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
+            Sudah punya akun?{" "}
+            <Link
+              href="/login"
+              className="text-blue-400 hover:text-blue-300 font-medium"
+            >
               Masuk di sini
             </Link>
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -5,10 +5,12 @@ import {
   TrendingUp, BookOpen, AlertTriangle, CheckCircle,
   ArrowRight, Activity, BarChart3, RefreshCw
 } from 'lucide-react';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, AreaChart, Area
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+const DashboardTrenIpsChart = dynamic(
+  () => import('@/components/charts/DashboardTrenIpsChart'),
+  { ssr: false, loading: () => <div className="h-[220px] w-full flex items-center justify-center text-slate-500 text-sm animate-pulse">Memuat grafik...</div> }
+);
 
 function RiskBadge({ kategori }: { kategori: string | null | undefined }) {
   if (!kategori || kategori === 'Belum Dianalisis') {
@@ -54,17 +56,7 @@ function RiskGauge({ value, kategori }: { value: number, kategori: string }) {
   );
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload?.length) {
-    return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs shadow-xl">
-        <p className="text-slate-400 mb-1">{label}</p>
-        <p className="text-blue-400 font-bold">IPS: {payload[0]?.value}</p>
-      </div>
-    );
-  }
-  return null;
-};
+
 
 export default function DashboardClient({ user, data }: { user: any, data: any }) {
   const { akademik, risiko, tren_ips } = data;
@@ -174,28 +166,7 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
               Riwayat <ArrowRight size={12} />
             </Link>
           </div>
-          {tren_ips?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={tren_ips}>
-                <defs>
-                  <linearGradient id="ipsGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 4]} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                <Area type="monotone" dataKey="ips" stroke="#3b82f6" strokeWidth={3}
-                  fill="url(#ipsGrad)" dot={{ fill: '#3b82f6', r: 5, strokeWidth: 2, stroke: '#1e293b' }} activeDot={{ r: 7 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-40 flex items-center justify-center">
-              <p className="text-slate-500 text-sm">Belum ada data nilai untuk ditampilkan</p>
-            </div>
-          )}
+          <DashboardTrenIpsChart data={tren_ips} />
         </div>
       </div>
 
@@ -204,11 +175,10 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
         {[
           { href: '/input-nilai',    icon: BookOpen,     title: 'Input Nilai',        desc: 'Masukkan nilai mata kuliah',       color: 'from-blue-600 to-blue-800' },
           { href: '/hasil-analisis', icon: BarChart3,    title: 'Analisis Risiko',    desc: 'Hitung status risiko akademik',    color: 'from-purple-600 to-purple-800' },
-          { href: '/simulasi', icon: Activity,     title: 'Simulasi Nilai',     desc: 'Lihat dampak perubahan nilai',     color: 'from-indigo-600 to-indigo-800' },
         ].map(({ href, icon: Icon, title, desc, color }) => (
           <Link key={href} href={href}
             className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-start gap-4 hover:border-slate-600 hover:bg-slate-800/80 transition-all duration-300 group cursor-pointer">
-            <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <div className={`w-12 h-12 bg-linear-to-br ${color} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
               <Icon size={20} className="text-white" />
             </div>
             <div>

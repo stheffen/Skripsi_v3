@@ -43,7 +43,7 @@ export async function registerUser(formData: FormData) {
     // Generate KHS kosong if mahasiswa
     if (user.role === 'mahasiswa') {
       const allMk = await prisma.mataKuliah.findMany();
-      const khsData = allMk.map(mk => ({
+      const khsData = allMk.map((mk: any) => ({
         user_id: user.id,
         mata_kuliah_id: mk.id,
         semester_input: mk.semester,

@@ -330,7 +330,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
             </div>
             <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500"
+                className="h-full bg-linear-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500"
                 style={{ width: `${totalMK() > 0 ? (countFilled() / totalMK()) * 100 : 0}%` }}
               />
             </div>

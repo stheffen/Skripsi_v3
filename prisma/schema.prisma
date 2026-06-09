@@ -61,6 +61,8 @@ model Khs {
   mata_kuliah MataKuliah @relation(fields: [mata_kuliah_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, mata_kuliah_id])
+  @@index([user_id])
+  @@index([mata_kuliah_id])
   @@map("khs")
 }
 
@@ -80,6 +82,7 @@ model AnalisisRisiko {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
   @@map("analisis_risiko")
 }
 

@@ -21,7 +21,7 @@ export default async function DosenProfilPage() {
 
       <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
         {/* Header Cover */}
-        <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+        <div className="h-32 bg-linear-to-r from-blue-600 to-indigo-600 relative">
           <div className="absolute inset-0 bg-black/20" />
         </div>
 
@@ -30,7 +30,7 @@ export default async function DosenProfilPage() {
           {/* Avatar */}
           <div className="flex justify-between items-end -mt-12 mb-6 relative z-10">
             <div className="w-24 h-24 rounded-2xl bg-slate-800 border-4 border-slate-900 flex items-center justify-center shadow-xl">
-              <div className="w-full h-full rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl">
+              <div className="w-full h-full rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl">
                 {user?.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
             </div>

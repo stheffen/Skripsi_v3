@@ -26,7 +26,7 @@ export async function getDosenDashboard() {
     let risikoRendah = 0;
     let totalMkBermasalah = 0;
 
-    mahasiswa.forEach(m => {
+    mahasiswa.forEach((m: any) => {
       if (m.analisis_risiko.length > 0) {
         const ar = m.analisis_risiko[0];
         if (ar.kategori === 'Tinggi') risikoTinggi++;
@@ -70,7 +70,7 @@ export async function getDosenMahasiswaList() {
       orderBy: { name: 'asc' },
     });
 
-    const formattedList = mahasiswaList.map(m => {
+    const formattedList = mahasiswaList.map((m: any) => {
       const ar = m.analisis_risiko.length > 0 ? m.analisis_risiko[0] : null;
       return {
         id: m.id,

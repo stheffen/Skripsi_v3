@@ -17,7 +17,7 @@ export class AkademikService {
       },
     });
 
-    const khsFiltered = khsList.filter((khs) => {
+    const khsFiltered = khsList.filter((khs: any) => {
       const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
       return semEfektif === semester;
     });
@@ -93,7 +93,7 @@ export class AkademikService {
       },
     });
 
-    const result = khsList.map((khs) => {
+    const result = khsList.map((khs: any) => {
       const mk = khs.mata_kuliah;
       return {
         kode: mk.kode,
@@ -106,7 +106,7 @@ export class AkademikService {
     });
 
     // Urutkan: E dulu, lalu D; dan SKS besar dulu
-    result.sort((a, b) => {
+    result.sort((a: any, b: any) => {
       const bobotA = a.nilai === 'E' ? 0 : 1;
       const bobotB = b.nilai === 'E' ? 0 : 1;
       if (bobotA !== bobotB) return bobotA - bobotB;
@@ -130,7 +130,7 @@ export class AkademikService {
       },
     });
 
-    return khsList.reduce((acc, khs) => acc + khs.mata_kuliah.sks, 0);
+    return khsList.reduce((acc: any, khs: any) => acc + khs.mata_kuliah.sks, 0);
   }
 
   /**
@@ -147,7 +147,7 @@ export class AkademikService {
       },
     });
 
-    return khsList.reduce((acc, khs) => acc + khs.mata_kuliah.sks, 0);
+    return khsList.reduce((acc: any, khs: any) => acc + khs.mata_kuliah.sks, 0);
   }
 
   /**
@@ -167,7 +167,7 @@ export class AkademikService {
     const result: Record<number, any> = {};
 
     for (let sem = 1; sem <= 14; sem++) {
-      const khsSem = allKhs.filter((khs) => {
+      const khsSem = allKhs.filter((khs: any) => {
         const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
         return semEfektif === sem;
       });
@@ -193,7 +193,85 @@ export class AkademikService {
         total_mk: khsSem.length,
       };
     }
-
     return Object.values(result);
+  }
+
+  /**
+   * Mengambil SELURUH data akademik (IPK, IPS, MK Bermasalah, Statistik)
+   * hanya dalam 1 KALI eksekusi database. Mengatasi N+1 Query.
+   */
+  static async getAkademikSummary(userId: number, semesterAktif: number) {
+    const allKhs = await prisma.khs.findMany({
+      where: {
+        user_id: userId,
+        nilai: { not: null },
+      },
+      include: {
+        mata_kuliah: true,
+      },
+    });
+
+    let totalBobotKumulatif = 0;
+    let totalSksKumulatif = 0;
+    
+    let totalBobotSemester = 0;
+    let totalSksSemester = 0;
+    
+    let mkBermasalahCount = 0;
+    let totalSksLulus = 0;
+    
+    const semStats: Record<number, any> = {};
+
+    for (const khs of allKhs) {
+      const sks = khs.mata_kuliah.sks;
+      const bobot = khs.bobot_nilai ?? 0;
+      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
+      const isLulus = ['A', 'B', 'C'].includes(khs.nilai!);
+      const isBermasalah = ['D', 'E'].includes(khs.nilai!);
+
+      // Kumulatif (IPK, SKS Tempuh)
+      totalBobotKumulatif += bobot * sks;
+      totalSksKumulatif += sks;
+      
+      // IPS & SKS Lulus & Bermasalah
+      if (semEfektif === semesterAktif) {
+        totalBobotSemester += bobot * sks;
+        totalSksSemester += sks;
+      }
+      if (isLulus) totalSksLulus += sks;
+      if (isBermasalah) mkBermasalahCount++;
+
+      // Statistik Per Semester
+      if (!semStats[semEfektif]) {
+        semStats[semEfektif] = {
+          semester: semEfektif,
+          totalBobot: 0,
+          totalSks: 0,
+          mk_bermasalah: 0,
+          total_mk: 0,
+        };
+      }
+      semStats[semEfektif].totalBobot += bobot * sks;
+      semStats[semEfektif].totalSks += sks;
+      if (isBermasalah) semStats[semEfektif].mk_bermasalah++;
+      semStats[semEfektif].total_mk++;
+    }
+
+    const statistik_semester = Object.values(semStats).map((stat: any) => ({
+      semester: stat.semester,
+      ips: stat.totalSks > 0 ? Number((stat.totalBobot / stat.totalSks).toFixed(2)) : 0,
+      total_sks: stat.totalSks,
+      mk_bermasalah: stat.mk_bermasalah,
+      total_mk: stat.total_mk,
+    })).sort((a, b) => a.semester - b.semester);
+
+    return {
+      ipk: totalSksKumulatif > 0 ? Number((totalBobotKumulatif / totalSksKumulatif).toFixed(2)) : 0.0,
+      ips: totalSksSemester > 0 ? Number((totalBobotSemester / totalSksSemester).toFixed(2)) : 0.0,
+      mk_bermasalah: mkBermasalahCount,
+      total_sks_tempuh: totalSksKumulatif,
+      total_sks_lulus: totalSksLulus,
+      statistik_semester,
+    };
   }
 }

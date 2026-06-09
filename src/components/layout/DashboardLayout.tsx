@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="text-xs font-semibold text-slate-200">{user?.name || 'Loading...'}</p>
               <p className="text-xs text-slate-500 capitalize">{user?.role === 'dosen' ? 'Dosen Pembimbing' : 'Mahasiswa'}</p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+            <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
               {user?.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
           </div>
