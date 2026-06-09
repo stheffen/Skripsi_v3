@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  name             String
+  email            String    @unique
+  nim              String?   @unique
+  password         String
+  role             String    // 'mahasiswa' or 'dosen'
+  semester_aktif   Int?
+  angkatan         String?
+  phone            String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  khs              Khs[]
+  analisis_risiko  AnalisisRisiko[]
+
+  dosenPembimbing    DosenMahasiswa[] @relation("DosenToMahasiswa")
+  mahasiswaBimbingan DosenMahasiswa[] @relation("MahasiswaToDosen")
+  
+  @@map("users")
+}
+
+model MataKuliah {
+  id         Int      @id @default(autoincrement())
+  kode       String   @unique
+  nama       String
+  sks        Int
+  semester         Int
+  jenis            String
+  is_pilihan       Boolean  @default(false)
+  kelompok_pilihan String?
+  created_at       DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  khs        Khs[]
+
+  @@map("mata_kuliah")
+}
+
+model Khs {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  mata_kuliah_id    Int
+  nilai             String?  // 'A', 'B', 'C', 'D', 'E'
+  bobot_nilai       Float?
+  semester_input    Int?
+  semester_override Int?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  mata_kuliah MataKuliah @relation(fields: [mata_kuliah_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, mata_kuliah_id])
+  @@map("khs")
+}
+
+model AnalisisRisiko {
+  id                     Int      @id @default(autoincrement())
+  user_id                Int
+  semester               Int
+  ipk                    Float
+  ips                    Float
+  mk_bermasalah          Int
+  fuzzy_output           Float
+  kategori               String
+  rekomendasi            String
+  detail_fuzzy           String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("analisis_risiko")
+}
+
+model DosenMahasiswa {
+  id           Int      @id @default(autoincrement())
+  dosen_id     Int
+  mahasiswa_id Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  dosen     User @relation("DosenToMahasiswa", fields: [dosen_id], references: [id], onDelete: Cascade)
+  mahasiswa User @relation("MahasiswaToDosen", fields: [mahasiswa_id], references: [id], onDelete: Cascade)
+
+  @@unique([dosen_id, mahasiswa_id])
+  @@map("dosen_mahasiswa")
+}

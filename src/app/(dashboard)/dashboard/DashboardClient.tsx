@@ -1,0 +1,223 @@
+"use client";
+
+import Link from 'next/link';
+import {
+  TrendingUp, BookOpen, AlertTriangle, CheckCircle,
+  ArrowRight, Activity, BarChart3, RefreshCw
+} from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, AreaChart, Area
+} from 'recharts';
+
+function RiskBadge({ kategori }: { kategori: string | null | undefined }) {
+  if (!kategori || kategori === 'Belum Dianalisis') {
+    return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400">Belum Dianalisis</span>;
+  }
+  const colorClass = 
+    kategori === 'Tinggi' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+    kategori === 'Sedang' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+    'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+  
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>{kategori}</span>;
+}
+
+function RiskGauge({ value, kategori }: { value: number, kategori: string }) {
+  const pct = Math.min(100, Math.max(0, value));
+  const color = kategori === 'Tinggi' ? '#ef4444' : kategori === 'Sedang' ? '#f59e0b' : '#10b981';
+  const angle = (pct / 100) * 180 - 90;
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 200 110" className="w-48">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" strokeWidth="18" strokeLinecap="round" />
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke={color} strokeWidth="18"
+          strokeLinecap="round" strokeDasharray="251.3"
+          strokeDashoffset={251.3 - (pct / 100) * 251.3}
+          style={{ transition: 'stroke-dashoffset 1s ease' }} />
+        <line
+          x1="100" y1="100"
+          x2={100 + 65 * Math.cos((angle - 90) * Math.PI / 180)}
+          y2={100 + 65 * Math.sin((angle - 90) * Math.PI / 180)}
+          stroke={color} strokeWidth="3" strokeLinecap="round"
+          style={{ transition: 'all 1s ease' }}
+        />
+        <circle cx="100" cy="100" r="6" fill={color} />
+        <text x="20" y="108" textAnchor="middle" fontSize="9" fill="#64748b">0</text>
+        <text x="180" y="108" textAnchor="middle" fontSize="9" fill="#64748b">100</text>
+      </svg>
+      <div className="text-center -mt-2">
+        <p className="text-3xl font-bold" style={{ color }}>{value.toFixed(1)}</p>
+        <p className="text-xs text-slate-500 mt-1">Nilai Fuzzy Output</p>
+      </div>
+    </div>
+  );
+}
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload?.length) {
+    return (
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs shadow-xl">
+        <p className="text-slate-400 mb-1">{label}</p>
+        <p className="text-blue-400 font-bold">IPS: {payload[0]?.value}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+export default function DashboardClient({ user, data }: { user: any, data: any }) {
+  const { akademik, risiko, tren_ips } = data;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-100">
+            Halo, {user?.name?.split(' ')[0]} 👋
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Semester {user?.semester_aktif}
+            {user?.angkatan && ` — Angkatan ${user.angkatan}`}
+          </p>
+        </div>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-medium text-slate-400">IPK Kumulatif</p>
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <TrendingUp size={16} className="text-blue-400" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-100">{akademik.ipk.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
+        </div>
+        
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-medium text-slate-400">IPS Semester {user?.semester_aktif}</p>
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Activity size={16} className="text-purple-400" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-100">{akademik.ips.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-medium text-slate-400">MK Bermasalah</p>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              akademik.mk_bermasalah > 0 ? 'bg-red-500/20' : 'bg-emerald-500/20'
+            }`}>
+              {akademik.mk_bermasalah > 0
+                ? <AlertTriangle size={16} className="text-red-400" />
+                : <CheckCircle size={16} className="text-emerald-400" />
+              }
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-100">{akademik.mk_bermasalah}</p>
+          <p className="text-xs text-slate-500 mt-1">nilai D / E</p>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-medium text-slate-400">Total SKS Lulus</p>
+            <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+              <BookOpen size={16} className="text-indigo-400" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-100">{akademik.total_sks_lulus}</p>
+          <p className="text-xs text-slate-500 mt-1">dari {akademik.total_sks_tempuh} SKS</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Gauge Risiko */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between w-full mb-4">
+            <h3 className="font-semibold text-slate-200">Status Risiko</h3>
+            <Link href="/hasil-analisis" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+              Detail <ArrowRight size={12} />
+            </Link>
+          </div>
+          {risiko ? (
+            <>
+              <RiskGauge value={risiko.fuzzy_output} kategori={risiko.kategori} />
+              <div className="mt-4 text-center">
+                <RiskBadge kategori={risiko.kategori} />
+                <p className="text-xs text-slate-500 mt-2">
+                  Analisis Semester {risiko.semester} · {risiko.tanggal}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <BarChart3 size={32} className="text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-400 text-sm mb-3">Belum ada analisis risiko</p>
+              <Link href="/hasil-analisis" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors text-sm">
+                Mulai Analisis
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Tren IPS */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 hover:border-slate-700 transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-semibold text-slate-200">Tren IPS per Semester</h3>
+            <Link href="/riwayat-analisis" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+              Riwayat <ArrowRight size={12} />
+            </Link>
+          </div>
+          {tren_ips?.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={tren_ips}>
+                <defs>
+                  <linearGradient id="ipsGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="semester" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 4]} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                <Area type="monotone" dataKey="ips" stroke="#3b82f6" strokeWidth={3}
+                  fill="url(#ipsGrad)" dot={{ fill: '#3b82f6', r: 5, strokeWidth: 2, stroke: '#1e293b' }} activeDot={{ r: 7 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-40 flex items-center justify-center">
+              <p className="text-slate-500 text-sm">Belum ada data nilai untuk ditampilkan</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { href: '/input-nilai',    icon: BookOpen,     title: 'Input Nilai',        desc: 'Masukkan nilai mata kuliah',       color: 'from-blue-600 to-blue-800' },
+          { href: '/hasil-analisis', icon: BarChart3,    title: 'Analisis Risiko',    desc: 'Hitung status risiko akademik',    color: 'from-purple-600 to-purple-800' },
+          { href: '/simulasi', icon: Activity,     title: 'Simulasi Nilai',     desc: 'Lihat dampak perubahan nilai',     color: 'from-indigo-600 to-indigo-800' },
+        ].map(({ href, icon: Icon, title, desc, color }) => (
+          <Link key={href} href={href}
+            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-start gap-4 hover:border-slate-600 hover:bg-slate-800/80 transition-all duration-300 group cursor-pointer">
+            <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+              <Icon size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-200 text-sm group-hover:text-white transition-colors">{title}</p>
+              <p className="text-xs text-slate-500 mt-1">{desc}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
