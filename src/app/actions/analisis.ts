@@ -1,11 +1,9 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from '@/lib/prisma';
 import { AkademikService } from "@/services/akademikService";
 import { prosesFuzzy } from "@/services/fuzzyMamdaniService";
 import { RekomendasiService } from "@/services/rekomendasiService";
-
-const prisma = new PrismaClient();
 
 export async function hitungAnalisisRisiko(userId: number, semesterAktif: number) {
   try {

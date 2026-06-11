@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from '@/lib/prisma';
 import { AkademikService } from "@/services/akademikService";
-
-const prisma = new PrismaClient();
 
 export async function getDashboardData(userId: number, semesterAktif: number) {
   const summary = await AkademikService.getAkademikSummary(userId, semesterAktif);
