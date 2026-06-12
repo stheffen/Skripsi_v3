@@ -216,7 +216,9 @@ export default function InputNilaiClient({ user }: { user: any }) {
       setSaved(true);
       setChanges({});
       fetchSemester(activeSem);
-      await update();
+      if (res.newActiveSem) {
+        await update({ semester_aktif: res.newActiveSem });
+      }
     } catch (err: any) {
       setError(err.message || 'Gagal menyimpan nilai.');
     } finally {

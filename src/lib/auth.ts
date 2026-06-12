@@ -49,12 +49,15 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.nim = user.nim;
         token.semester_aktif = user.semester_aktif;
+      }
+      if (trigger === "update" && session?.semester_aktif !== undefined) {
+        token.semester_aktif = session.semester_aktif;
       }
       return token;
     },
