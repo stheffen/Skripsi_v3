@@ -60,15 +60,7 @@ export default async function ProfilPage() {
 
             {user.role === 'mahasiswa' && (
               <>
-                <div className="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400">
-                    <GraduationCap size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 font-medium mb-0.5">Program Studi</p>
-                    <p className="text-sm font-semibold text-slate-200">{(user as any).program_studi || '-'}</p>
-                  </div>
-                </div>
+
 
                 <div className="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 text-emerald-400">

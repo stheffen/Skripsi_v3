@@ -143,8 +143,11 @@ function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
   );
 }
 
-export default function HasilAnalisisClient({ user, initialData }: { user: any, initialData: any }) {
-  const [semester, setSemester] = useState(user?.semester_aktif || 1);
+export default function HasilAnalisisClient({ user, initialData, filledSemesters = [] }: { user: any, initialData: any, filledSemesters?: number[] }) {
+  const initialSem = filledSemesters.length > 0
+    ? (filledSemesters.includes(user?.semester_aktif) ? user.semester_aktif : filledSemesters[filledSemesters.length - 1])
+    : 1;
+  const [semester, setSemester] = useState(initialSem);
   const [result, setResult] = useState<any>(initialData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -200,13 +203,18 @@ export default function HasilAnalisisClient({ user, initialData }: { user: any, 
               className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               value={semester}
               onChange={e => setSemester(Number(e.target.value))}
+              disabled={filledSemesters.length === 0}
             >
-              {Array.from({ length: 14 }, (_, i) => i + 1).map(s => (
-                <option key={s} value={s}>Semester {s}</option>
-              ))}
+              {filledSemesters.length === 0 ? (
+                <option value={1}>Belum ada nilai terisi</option>
+              ) : (
+                filledSemesters.map(s => (
+                  <option key={s} value={s}>Semester {s}</option>
+                ))
+              )}
             </select>
-            <button onClick={handleAnalisis} disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-500/20">
+            <button onClick={handleAnalisis} disabled={loading || filledSemesters.length === 0}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-500/20 disabled:opacity-40 disabled:cursor-not-allowed">
               {loading
                 ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 : <Zap size={16} />

@@ -12,6 +12,11 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
     const mkBermasalah = await AkademikService.hitungMKBermasalah(userId);
     const mkDetail = await AkademikService.getMKBermasalahDetail(userId);
 
+    const allKhs = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
+    });
+
     // Fuzzy Mamdani processing
     const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah);
 
@@ -21,7 +26,9 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       ips,
       ipk,
       mkBermasalah,
-      mkDetail
+      mkDetail,
+      allKhs,
+      semesterAktif
     );
 
     // Save to database

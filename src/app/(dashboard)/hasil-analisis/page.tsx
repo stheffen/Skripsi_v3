@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import HasilAnalisisClient from "./HasilAnalisisClient";
 import prisma from '@/lib/prisma';
+import { getFilledSemesters } from '@/app/actions/khs';
 
 export default async function HasilAnalisisPage() {
   const session = await getServerSession(authOptions);
@@ -16,6 +17,10 @@ export default async function HasilAnalisisPage() {
   if (user.role === 'dosen') {
     redirect("/dosen/dashboard");
   }
+
+  // Fetch filled semesters
+  const filledSemRes = await getFilledSemesters(parseInt(user.id));
+  const filledSemesters = filledSemRes.data || [];
 
   // Ambil analisis terbaru
   const latest = await prisma.analisisRisiko.findFirst({
@@ -39,5 +44,5 @@ export default async function HasilAnalisisPage() {
     } catch(e) {}
   }
 
-  return <HasilAnalisisClient user={user} initialData={initialData} />;
+  return <HasilAnalisisClient user={user} initialData={initialData} filledSemesters={filledSemesters} />;
 }

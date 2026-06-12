@@ -70,10 +70,46 @@ export async function batchUpdateKHS(userId: number, values: { khs_id: number; n
         },
       });
     }
+
+    // Perbarui semester_aktif berdasarkan semester tertinggi yang sudah diisi
+    const filledSemRes = await getFilledSemesters(userId);
+    if (filledSemRes.data && filledSemRes.data.length > 0) {
+      const maxSem = Math.max(...filledSemRes.data);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { semester_aktif: maxSem }
+      });
+    }
+
     return { success: true };
   } catch (error: any) {
     console.error(error);
     return { error: error.message || "Gagal menyimpan nilai" };
+  }
+}
+
+export async function getFilledSemesters(userId: number) {
+  try {
+    const allKhs = await prisma.khs.findMany({
+      where: {
+        user_id: userId,
+        nilai: { not: null }
+      },
+      include: {
+        mata_kuliah: { select: { semester: true } }
+      }
+    });
+
+    const semSet = new Set<number>();
+    for (const khs of allKhs) {
+      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
+      semSet.add(semEfektif);
+    }
+    
+    return { data: Array.from(semSet).sort((a, b) => a - b) };
+  } catch (error: any) {
+    console.error(error);
+    return { error: error.message || "Gagal mengambil daftar semester" };
   }
 }
 

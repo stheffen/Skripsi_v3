@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   BookOpen, Save, CheckCircle, AlertTriangle, Info,
-  ArrowRightLeft, X
+  ArrowRightLeft, X, Lock
 } from 'lucide-react';
-import { getSemesterKHS, batchUpdateKHS, pindahSemesterKHS } from '@/app/actions/khs';
+import { getSemesterKHS, batchUpdateKHS, pindahSemesterKHS, getFilledSemesters } from '@/app/actions/khs';
 
 const NILAI_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 const NILAI_COLORS: Record<string, string> = {
@@ -16,19 +17,20 @@ const NILAI_COLORS: Record<string, string> = {
   E: 'bg-red-500/20 text-red-300 border-red-500/30',
 };
 
-function NilaiSelector({ khsId, currentNilai, onChange }: any) {
+function NilaiSelector({ khsId, currentNilai, onChange, disabled }: any) {
   return (
     <div className="flex gap-1">
       {NILAI_OPTIONS.map(n => (
         <button
           key={n}
           type="button"
+          disabled={disabled}
           onClick={() => onChange(khsId, n)}
           className={`w-9 h-9 rounded-lg text-xs font-bold border transition-all duration-150 ${
             currentNilai === n
               ? `${NILAI_COLORS[n]} scale-110 shadow-lg`
               : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-500 hover:text-slate-300'
-          }`}
+          } ${disabled ? 'opacity-40 cursor-not-allowed hover:border-slate-700 hover:text-slate-500' : ''}`}
         >
           {n}
         </button>
@@ -41,7 +43,7 @@ function ModalPindah({ item, activeSem, onConfirm, onClose }: any) {
   const isGanjil = (item?.semester_asli ?? activeSem) % 2 !== 0;
   const semOptions = Array.from({ length: 14 }, (_, i) => i + 1).filter(s => {
     const sameTipe = isGanjil ? s % 2 !== 0 : s % 2 === 0;
-    return sameTipe && s !== activeSem;
+    return sameTipe && s !== activeSem && s >= 3;
   });
   const [targetSem, setTargetSem] = useState<number | null>(null);
   const semAsli = item?.semester_asli ?? item?.semester_efektif ?? activeSem;
@@ -119,6 +121,7 @@ function ModalPindah({ item, activeSem, onConfirm, onClose }: any) {
 }
 
 export default function InputNilaiClient({ user }: { user: any }) {
+  const { update } = useSession();
   const [activeSem, setActiveSem] = useState(user?.semester_aktif || 1);
   const [semData, setSemData] = useState<any>(null);
   const [changes, setChanges] = useState<Record<number, string>>({});
@@ -129,6 +132,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
   const [pilihanSelected, setPilihanSelected] = useState<Record<string, number>>({});
   const [pindahModal, setPindahModal] = useState<any>(null);
   const [pindahLoading, setPindahLoading] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   const fetchSemester = useCallback(async (sem: number) => {
     setLoading(true);
@@ -145,6 +149,15 @@ export default function InputNilaiClient({ user }: { user: any }) {
         if (filled) initPilihan[kelompok] = filled.khs_id;
       });
       setPilihanSelected(initPilihan);
+
+      // Cek apakah semester sebelumnya sudah diisi
+      const filledData = await getFilledSemesters(parseInt(user.id));
+      const fSems = filledData.data || [];
+      if (sem > 1 && !fSems.includes(sem - 1)) {
+        setIsLocked(true);
+      } else {
+        setIsLocked(false);
+      }
     } catch (err: any) {
       setError(err.message || 'Gagal memuat data mata kuliah.');
     } finally {
@@ -203,6 +216,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
       setSaved(true);
       setChanges({});
       fetchSemester(activeSem);
+      await update();
     } catch (err: any) {
       setError(err.message || 'Gagal menyimpan nilai.');
     } finally {
@@ -270,6 +284,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
           khsId={item.khs_id}
           currentNilai={getCurrentNilai(item)}
           onChange={handleNilaiChange}
+          disabled={isLocked}
         />
         {showPindah && item.khs_id && (
           <button
@@ -319,6 +334,18 @@ export default function InputNilaiClient({ user }: { user: any }) {
           untuk memindahkannya ke semester ini. MK ganjil ↔ ganjil · MK genap ↔ genap.
         </p>
       </div>
+
+      {isLocked && (
+        <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
+          <Lock size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-red-400 text-sm">Semester Terkunci</h3>
+            <p className="text-sm text-red-300 mt-0.5">
+              Anda belum mengisi nilai di Semester {activeSem - 1}. Anda harus mengisi semester sebelumnya secara berurutan. Anda hanya bisa <strong>memindahkan</strong> mata kuliah di semester ini.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Progress */}
       {semData && !loading && (
@@ -434,6 +461,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
                             khsId={item.khs_id}
                             currentNilai={getCurrentNilai(item)}
                             onChange={handleNilaiChange}
+                            disabled={isLocked}
                           />
                         )}
                       </div>
@@ -448,8 +476,8 @@ export default function InputNilaiClient({ user }: { user: any }) {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+              disabled={saving || isLocked}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
