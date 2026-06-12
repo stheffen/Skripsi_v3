@@ -6,18 +6,19 @@ export class RekomendasiService {
     mkBermasalah: number,
     mkDetail: any[] = [],
     allKhs: any[] = [],
-    semesterAktif: number = 1
+    semesterAktif: number = 1,
+    nextSemesterCourses: any[] = []
   ): string {
     const kuotaSks = this.hitungKuotaSks(ips);
     const bakat = this.analisisBakat(allKhs);
 
     switch (kategori) {
       case 'Tinggi':
-        return this.rekomendasiTinggi(ips, ipk, mkBermasalah, mkDetail, kuotaSks, bakat, semesterAktif);
+        return this.rekomendasiTinggi(ips, ipk, mkBermasalah, mkDetail, kuotaSks, bakat, semesterAktif, nextSemesterCourses);
       case 'Sedang':
-        return this.rekomendasiSedang(ips, ipk, mkBermasalah, mkDetail, kuotaSks, bakat, semesterAktif);
+        return this.rekomendasiSedang(ips, ipk, mkBermasalah, mkDetail, kuotaSks, bakat, semesterAktif, nextSemesterCourses);
       default:
-        return this.rekomendasiRendah(ipk, ips, kuotaSks, bakat, semesterAktif);
+        return this.rekomendasiRendah(ipk, ips, kuotaSks, bakat, semesterAktif, nextSemesterCourses);
     }
   }
 
@@ -85,18 +86,51 @@ export class RekomendasiService {
     return lines;
   }
 
-  private static renderSaranBakat(bakat: string[]): string[] {
+  private static filterMKByBakat(bakat: string, courses: any[]): any[] {
+    return courses.filter(mk => {
+      const nama = mk.nama.toLowerCase();
+      if (bakat === 'Matematika & Logika') {
+        return nama.includes('kalkulus') || nama.includes('aljabar') || nama.includes('statistika') || nama.includes('matematika') || nama.includes('numerik') || nama.includes('diskrit') || nama.includes('kecerdasan') || nama.includes('bi') || nama.includes('data');
+      }
+      if (bakat === 'Pemrograman & Rekayasa Perangkat Lunak') {
+        return nama.includes('algoritma') || nama.includes('pemrograman') || nama.includes('visual') || nama.includes('web') || nama.includes('android') || nama.includes('objek') || nama.includes('perangkat lunak');
+      }
+      if (bakat === 'Sistem Basis Data & Data Mining') {
+        return nama.includes('basis data') || nama.includes('warehouse') || nama.includes('sistem berkas') || nama.includes('data');
+      }
+      if (bakat === 'Infrastruktur & Jaringan Komputer') {
+        return nama.includes('jaringan') || nama.includes('arsitektur') || nama.includes('mikroprosesor') || nama.includes('sistem operasi') || nama.includes('lanjutan');
+      }
+      if (bakat === 'Multimedia & UI/UX') {
+        return nama.includes('grafika') || nama.includes('multimedia') || nama.includes('interaksi') || nama.includes('ui/ux');
+      }
+      return false;
+    });
+  }
+
+  private static renderSaranBakat(bakat: string[], nextSemesterCourses: any[], semesterAktif: number): string[] {
     const lines = [];
     if (bakat.length > 0) {
-      lines.push('🎯 REKOMENDASI BERBASIS MINAT & BAKAT:');
-      lines.push(`Sistem mendeteksi bahwa Anda sangat unggul (nilai A/B) pada kelompok mata kuliah: **${bakat.join('** dan **')}**.`);
+      lines.push('🎯 REKOMENDASI MATA KULIAH SPESIFIK BERBASIS MINAT:');
+      lines.push(`Sistem mendeteksi bahwa Anda unggul (nilai A/B) pada bidang: **${bakat.join('** dan **')}**.`);
       
       bakat.forEach(b => {
-        if (b === 'Matematika & Logika') lines.push('• Karena keunggulan Anda di **Logika/Matematika**, kami menyarankan Anda mengambil mata kuliah tingkat lanjut seperti **Kecerdasan Buatan** atau konsentrasi analisis data.');
-        if (b === 'Pemrograman & Rekayasa Perangkat Lunak') lines.push('• Karena Anda jago di **Pemrograman**, sangat disarankan untuk berfokus mengambil **Pemrograman Web**, **Pemrograman Android**, atau **Rekayasa Perangkat Lunak** sebagai topik utama skripsi/proyek Anda.');
-        if (b === 'Sistem Basis Data & Data Mining') lines.push('• Karena Anda kuat di **Basis Data**, pertimbangkan untuk mendalami konsentrasi **Data Mining & Warehouse** atau Manajemen Basis Data tingkat lanjut.');
-        if (b === 'Infrastruktur & Jaringan Komputer') lines.push('• Karena keahlian Anda di bidang **Infrastruktur/Sistem**, kami merekomendasikan Anda mengambil **Jaringan Komputer Lanjutan** atau Keamanan Cyber.');
-        if (b === 'Multimedia & UI/UX') lines.push('• Karena kreativitas Anda di **Multimedia**, disarankan untuk mengambil **Sistem Multimedia** dan berfokus pada desain UI/UX di mata kuliah Interaksi Manusia dan Komputer.');
+        const matchingMK = this.filterMKByBakat(b, nextSemesterCourses);
+        const mkNames = matchingMK.map(m => m.nama);
+        
+        let saranText = '';
+        if (b === 'Matematika & Logika') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada perhitungan/analitik.';
+        if (b === 'Pemrograman & Rekayasa Perangkat Lunak') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada pelajaran pemrograman/software.';
+        if (b === 'Sistem Basis Data & Data Mining') saranText = 'karena keunggulan Anda di bidang analisis dan pengolahan data.';
+        if (b === 'Infrastruktur & Jaringan Komputer') saranText = 'karena nilai Anda tinggi pada mata kuliah infrastruktur dan perangkat keras/jaringan.';
+        if (b === 'Multimedia & UI/UX') saranText = 'mengingat kreativitas Anda di bidang visual dan multimedia.';
+
+        if (mkNames.length > 0) {
+          lines.push(`• Pada Semester ${semesterAktif + 1}, sebaiknya Anda mengambil mata kuliah **${mkNames.join(', ')}** ${saranText}`);
+        } else {
+          // Fallback if no specific course found for next semester
+          lines.push(`• Sangat disarankan untuk berfokus/mengambil peminatan yang berhubungan dengan **${b}** ${saranText}`);
+        }
       });
       lines.push('');
     }
@@ -106,7 +140,7 @@ export class RekomendasiService {
   // ────────────────────────────────────────────────────────────────────────
   // RISIKO TINGGI
   // ────────────────────────────────────────────────────────────────────────
-  private static rekomendasiTinggi(ips: number, ipk: number, mkBermasalah: number, mkDetail: any[], kuotaSks: number, bakat: string[], semesterAktif: number): string {
+  private static rekomendasiTinggi(ips: number, ipk: number, mkBermasalah: number, mkDetail: any[], kuotaSks: number, bakat: string[], semesterAktif: number, nextSemesterCourses: any[]): string {
     const lines: string[] = [];
     lines.push('🚨 STATUS RISIKO TINGGI');
     lines.push('Kondisi akademik Anda memerlukan tindakan segera. Jangan tunda konsultasi dengan Dosen Pembimbing Akademik (DPA).\n');
@@ -121,7 +155,7 @@ export class RekomendasiService {
     lines.push('');
 
     lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah));
-    lines.push(...this.renderSaranBakat(bakat));
+    lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     if (mkDetail.length > 0) {
       lines.push('❌ MATA KULIAH YANG PERLU PERHATIAN (D/E):');
@@ -142,7 +176,7 @@ export class RekomendasiService {
   // ────────────────────────────────────────────────────────────────────────
   // RISIKO SEDANG
   // ────────────────────────────────────────────────────────────────────────
-  private static rekomendasiSedang(ips: number, ipk: number, mkBermasalah: number, mkDetail: any[], kuotaSks: number, bakat: string[], semesterAktif: number): string {
+  private static rekomendasiSedang(ips: number, ipk: number, mkBermasalah: number, mkDetail: any[], kuotaSks: number, bakat: string[], semesterAktif: number, nextSemesterCourses: any[]): string {
     const lines: string[] = [];
     lines.push('⚠️ STATUS RISIKO SEDANG');
     lines.push('Performa Anda memerlukan perhatian. Dengan strategi SKS yang tepat, risiko ini bisa ditekan.\n');
@@ -154,7 +188,7 @@ export class RekomendasiService {
     lines.push('');
 
     lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah));
-    lines.push(...this.renderSaranBakat(bakat));
+    lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     if (mkDetail.length > 0) {
       lines.push('📋 MATA KULIAH YANG PERLU DIPERBAIKI (D/E):');
@@ -173,13 +207,13 @@ export class RekomendasiService {
   // ────────────────────────────────────────────────────────────────────────
   // RISIKO RENDAH
   // ────────────────────────────────────────────────────────────────────────
-  private static rekomendasiRendah(ipk: number, ips: number, kuotaSks: number, bakat: string[], semesterAktif: number): string {
+  private static rekomendasiRendah(ipk: number, ips: number, kuotaSks: number, bakat: string[], semesterAktif: number, nextSemesterCourses: any[]): string {
     const lines: string[] = [];
     lines.push('✅ STATUS RISIKO RENDAH');
     lines.push('Performa akademik Anda sangat baik! Pertahankan dan susun strategi akselerasi lulus cepat.\n');
 
     lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, 0));
-    lines.push(...this.renderSaranBakat(bakat));
+    lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     lines.push('🏆 PENCAPAIAN ANDA:');
     if (ipk >= 3.75) lines.push(`• IPK (${ipk.toFixed(2)}) luar biasa — jalur cumlaude predikat istimewa.`);

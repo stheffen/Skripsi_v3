@@ -17,6 +17,10 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       include: { mata_kuliah: true },
     });
 
+    const nextSemesterCourses = await prisma.mataKuliah.findMany({
+      where: { semester: semesterAktif + 1 }
+    });
+
     // Fuzzy Mamdani processing
     const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah);
 
@@ -28,7 +32,8 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       mkBermasalah,
       mkDetail,
       allKhs,
-      semesterAktif
+      semesterAktif,
+      nextSemesterCourses
     );
 
     // Save to database
