@@ -70,18 +70,69 @@ export class RekomendasiService {
       .map(([kategori]) => kategori);
   }
 
-  private static renderSaranPengambilan(kuotaSks: number, semesterAktif: number, mkBermasalah: number): string[] {
+  private static renderSaranPengambilan(kuotaSks: number, semesterAktif: number, mkBermasalah: number, nextSemesterCourses: any[], mkDetail: any[]): string[] {
     const lines = [];
     lines.push('📋 STRATEGI PENGAMBILAN SKS SEMESTER DEPAN:');
     lines.push(`• Berdasarkan IPS Anda, Anda berhak mengambil maksimal **${kuotaSks} SKS** di Semester ${semesterAktif + 1}.`);
     
+    let remainingSks = kuotaSks;
+    const mkBaruToTake = [];
+    const mkUlangToTake = [];
+
+    // Prioritize Wajib, then Pilihan for new courses
+    const sortedNew = [...nextSemesterCourses].sort((a, b) => {
+      if (a.jenis === 'Wajib' && b.jenis !== 'Wajib') return -1;
+      if (a.jenis !== 'Wajib' && b.jenis === 'Wajib') return 1;
+      return 0;
+    });
+
+    for (const mk of sortedNew) {
+      if (remainingSks >= mk.sks) {
+        mkBaruToTake.push(mk);
+        remainingSks -= mk.sks;
+      }
+    }
+
     if (mkBermasalah > 0) {
-      lines.push('• **Saran Prioritas (Sistem Pakar):** Sebaiknya prioritaskan mengambil mata kuliah BARU di semester selanjutnya terlebih dahulu untuk mengejar kurikulum utama.');
-      lines.push('• Setelah mata kuliah baru terpenuhi, gunakan *sisa kuota SKS* Anda untuk mengulang mata kuliah yang mendapat nilai D atau E.');
-      lines.push('• Pengecualian: Jika mata kuliah yang mendapat nilai E adalah prasyarat untuk mata kuliah selanjutnya, maka mata kuliah tersebut wajib diulang terlebih dahulu.');
+      const sortedUlang = [...mkDetail].sort((a, b) => (a.nilai === 'E' ? -1 : 1));
+      for (const mk of sortedUlang) {
+        if (remainingSks >= mk.sks) {
+          mkUlangToTake.push(mk);
+          remainingSks -= mk.sks;
+        }
+      }
+    }
+
+    if (mkBermasalah > 0) {
+      lines.push('• **Saran Prioritas (Sistem Pakar):** Sebaiknya prioritaskan mengambil mata kuliah BARU terlebih dahulu untuk mengejar kurikulum utama.');
+      
+      if (mkBaruToTake.length > 0) {
+        const listStr = mkBaruToTake.map(m => `${m.nama} (${m.sks} SKS)`).join(', ');
+        const totalSksBaru = mkBaruToTake.reduce((acc, m) => acc + m.sks, 0);
+        lines.push(`  ➤ **Opsi Mata Kuliah Baru:** ${listStr}.`);
+        lines.push(`  ➤ **Alasan:** Memenuhi kurikulum Semester ${semesterAktif + 1} (Total: ${totalSksBaru} SKS).`);
+      }
+
+      if (mkUlangToTake.length > 0) {
+        const listStr = mkUlangToTake.map(m => `${m.nama} (${m.sks} SKS)`).join(', ');
+        const totalSksUlang = mkUlangToTake.reduce((acc, m) => acc + m.sks, 0);
+        lines.push(`  ➤ **Opsi Mata Kuliah Mengulang:** Setelah mengambil MK Baru, sisa SKS Anda dapat digunakan untuk mengulang: ${listStr}.`);
+        lines.push(`  ➤ **Alasan:** Memanfaatkan sisa kuota SKS (Total: ${totalSksUlang} SKS). Pengecualian: Jika MK tersebut adalah prasyarat untuk mata kuliah selanjutnya, wajib diprioritaskan.`);
+      } else if (remainingSks < 2 && remainingSks > 0) {
+        lines.push(`  ➤ **Catatan:** Sisa SKS Anda (${remainingSks} SKS) tidak cukup untuk mengambil mata kuliah mengulang pada semester ini.`);
+      } else if (remainingSks === 0 && mkDetail.length > 0) {
+        lines.push(`  ➤ **Catatan:** Kuota SKS Anda sudah habis untuk mata kuliah baru. Anda belum bisa mengulang mata kuliah yang bermasalah di semester depan kecuali Anda mengurangi mata kuliah baru.`);
+      }
     } else {
       lines.push('• Anda dapat mengambil mata kuliah baru di semester selanjutnya secara maksimal sesuai paket kurikulum yang tersedia.');
+      if (mkBaruToTake.length > 0) {
+        const listStr = mkBaruToTake.map(m => `${m.nama} (${m.sks} SKS)`).join(', ');
+        const totalSksBaru = mkBaruToTake.reduce((acc, m) => acc + m.sks, 0);
+        lines.push(`  ➤ **Opsi Mata Kuliah:** ${listStr}.`);
+        lines.push(`  ➤ **Alasan:** Mengikuti struktur ideal kurikulum (Total: ${totalSksBaru} SKS).`);
+      }
     }
+
     lines.push('');
     return lines;
   }
@@ -154,7 +205,7 @@ export class RekomendasiService {
     else lines.push(`• IPK kumulatif (${ipk.toFixed(2)}) masih perlu ditingkatkan.`);
     lines.push('');
 
-    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah));
+    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah, nextSemesterCourses, mkDetail));
     lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     if (mkDetail.length > 0) {
@@ -187,7 +238,7 @@ export class RekomendasiService {
     if (ipk < 3.0) lines.push(`• IPK kumulatif (${ipk.toFixed(2)}) — masih ada ruang untuk ditingkatkan menuju 3.0.`);
     lines.push('');
 
-    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah));
+    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, mkBermasalah, nextSemesterCourses, mkDetail));
     lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     if (mkDetail.length > 0) {
@@ -212,7 +263,7 @@ export class RekomendasiService {
     lines.push('✅ STATUS RISIKO RENDAH');
     lines.push('Performa akademik Anda sangat baik! Pertahankan dan susun strategi akselerasi lulus cepat.\n');
 
-    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, 0));
+    lines.push(...this.renderSaranPengambilan(kuotaSks, semesterAktif, 0, nextSemesterCourses, []));
     lines.push(...this.renderSaranBakat(bakat, nextSemesterCourses, semesterAktif));
 
     lines.push('🏆 PENCAPAIAN ANDA:');
