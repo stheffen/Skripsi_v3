@@ -12,13 +12,13 @@ const RiwayatLineChart = dynamic(
 
 function RiskBadge({ kategori }: { kategori: string }) {
   const map: Record<string, any> = {
-    'Rendah': { cls: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30', icon: CheckCircle },
-    'Sedang': { cls: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30', icon: AlertTriangle },
-    'Tinggi': { cls: 'bg-red-500/20 text-red-400 border border-red-500/30', icon: TrendingDown },
+    'Rendah': { cls: 'bg-risk-rendah/10 text-risk-rendah border border-risk-rendah/20 dark:bg-transparent dark:text-risk-rendah dark:border-risk-rendah/50 dark:shadow-[0_0_10px_var(--color-risk-rendah)]', icon: CheckCircle },
+    'Sedang': { cls: 'bg-risk-sedang/10 text-risk-sedang border border-risk-sedang/20 dark:bg-transparent dark:text-risk-sedang dark:border-risk-sedang/50 dark:shadow-[0_0_10px_var(--color-risk-sedang)]', icon: AlertTriangle },
+    'Tinggi': { cls: 'bg-risk-tinggi/10 text-risk-tinggi border border-risk-tinggi/20 dark:bg-transparent dark:text-risk-tinggi dark:border-risk-tinggi/50 dark:shadow-[0_0_10px_var(--color-risk-tinggi)]', icon: TrendingDown },
   };
   const { cls, icon: Icon } = map[kategori] || map['Rendah'];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider ${cls}`}>
       <Icon size={12} />
       {kategori}
     </span>
@@ -26,7 +26,7 @@ function RiskBadge({ kategori }: { kategori: string }) {
 }
 
 function RiskColor(kategori: string) {
-  return kategori === 'Tinggi' ? '#ef4444' : kategori === 'Sedang' ? '#f59e0b' : '#10b981';
+  return kategori === 'Tinggi' ? 'var(--color-risk-tinggi)' : kategori === 'Sedang' ? 'var(--color-risk-sedang)' : 'var(--color-risk-rendah)';
 }
 
 function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
@@ -34,29 +34,29 @@ function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
     <p className="text-xs text-slate-500 italic">Tidak ada mata kuliah bermasalah 🎉</p>
   );
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-800">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-slate-800/80">
-            <th className="text-left px-3 py-2 text-slate-400 font-medium">MK</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">Nilai</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">SKS</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">Sem</th>
+          <tr className="bg-slate-50 dark:bg-slate-800/80">
+            <th className="text-left px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">MK</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Nilai</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">SKS</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Sem</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-transparent">
           {mkDetail.map((mk: any, i: number) => (
-            <tr key={i} className="hover:bg-slate-800/30 transition">
-              <td className="px-3 py-2 text-slate-300 max-w-[160px] truncate" title={mk.nama}>
+            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+              <td className="px-3 py-2 text-slate-800 dark:text-slate-300 max-w-[160px] truncate" title={mk.nama}>
                 <span className="text-slate-500 font-mono mr-1">{mk.kode}</span>{mk.nama}
               </td>
               <td className="px-3 py-2 text-center">
                 <span className={`font-bold px-2 py-0.5 rounded ${
-                  mk.nilai === 'E' ? 'bg-red-500/20 text-red-300' : 'bg-orange-500/20 text-orange-300'
+                  mk.nilai === 'E' ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300' : 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300'
                 }`}>{mk.nilai}</span>
               </td>
-              <td className="px-3 py-2 text-center text-slate-400">{mk.sks}</td>
-              <td className="px-3 py-2 text-center text-slate-500">{mk.semester}</td>
+              <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400">{mk.sks}</td>
+              <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400">{mk.semester}</td>
             </tr>
           ))}
         </tbody>
@@ -138,8 +138,8 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
         <>
           {/* Trend Chart */}
           {trendData.length > 1 && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
-              <h3 className="font-semibold text-slate-200 text-sm mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm mb-4 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
                 Tren IPS & IPK
               </h3>
@@ -158,20 +158,21 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
           {/* Daftar Riwayat */}
           <div className="space-y-3">
             {riwayat.map((item, idx) => (
-              <div key={item.id} className={`bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-300 ${
-                item.kategori === 'Tinggi' ? 'border-red-500/30 hover:border-red-500/50' :
-                item.kategori === 'Sedang' ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-emerald-500/30 hover:border-emerald-500/50'
+              <div key={item.id} className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-300 shadow-sm ${
+                item.kategori === 'Tinggi' ? 'border-risk-tinggi/30 dark:shadow-[0_0_15px_var(--color-risk-tinggi)] hover:border-risk-tinggi/50 border-l-4 border-l-risk-tinggi' :
+                item.kategori === 'Sedang' ? 'border-risk-sedang/30 dark:shadow-[0_0_15px_var(--color-risk-sedang)] hover:border-risk-sedang/50 border-l-4 border-l-risk-sedang' : 
+                'border-risk-rendah/30 dark:shadow-[0_0_15px_var(--color-risk-rendah)] hover:border-risk-rendah/50 border-l-4 border-l-risk-rendah'
               }`}>
                 <button
                   onClick={() => setExpanded(expanded === item.id ? null : item.id)}
-                  className="w-full flex items-center gap-4 p-5 hover:bg-slate-800/30 transition text-left cursor-pointer"
+                  className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition text-left cursor-pointer"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-bold text-slate-400 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
                     {riwayat.length - idx}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-slate-200">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
                         Analisis Semester {item.semester}
                       </span>
                       <RiskBadge kategori={item.kategori} />
@@ -186,11 +187,11 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
                   </div>
                   <div className="hidden sm:flex items-center gap-6 text-center mr-4">
                     <div>
-                      <p className="text-sm font-bold text-slate-200">{item.ips?.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-200">{item.ips?.toFixed(2)}</p>
                       <p className="text-xs text-slate-500 mt-0.5">IPS</p>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-200">{item.ipk?.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-200">{item.ipk?.toFixed(2)}</p>
                       <p className="text-xs text-slate-500 mt-0.5">IPK</p>
                     </div>
                     <div>
@@ -207,16 +208,16 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
                 </button>
 
                 {expanded === item.id && (
-                  <div className="border-t border-slate-800 p-5 space-y-6 bg-slate-900/50">
+                  <div className="border-t border-slate-200 dark:border-slate-800 p-5 space-y-6 bg-slate-50 dark:bg-slate-900/50">
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[
-                        ['MK Bermasalah', item.mk_bermasalah, item.mk_bermasalah > 0 ? 'text-red-400' : 'text-emerald-400'],
-                        ['SKS Tempuh',    item.total_sks_tempuh,    'text-slate-200'],
-                        ['SKS Lulus',     item.total_sks_lulus,     'text-slate-200'],
+                        ['MK Bermasalah', item.mk_bermasalah, item.mk_bermasalah > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'],
+                        ['SKS Tempuh',    item.total_sks_tempuh,    'text-slate-900 dark:text-slate-200'],
+                        ['SKS Lulus',     item.total_sks_lulus,     'text-slate-900 dark:text-slate-200'],
                         ['Fuzzy Output',  item.fuzzy_output?.toFixed(2), `font-bold`],
                       ].map(([label, val, cls]) => (
-                        <div key={label} className="bg-slate-800/50 rounded-xl p-4 border border-slate-800/80">
+                        <div key={label} className="bg-white dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-none">
                           <p className={`text-xl font-bold ${cls}`} style={label === 'Fuzzy Output' ? { color: RiskColor(item.kategori) } : {}}>
                             {val || '-'}
                           </p>
@@ -234,12 +235,12 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
                     </div>
 
                     {/* Rekomendasi */}
-                    <div className="bg-slate-800/30 border border-slate-800 rounded-xl p-4">
+                    <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm dark:shadow-none">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-xs font-semibold text-slate-400">💡 Rekomendasi:</p>
+                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">💡 Rekomendasi:</p>
                         <button
                           onClick={() => setShowFullRek(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                          className="text-xs text-blue-400 hover:text-blue-300 font-medium transition"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition"
                         >
                           {showFullRek[item.id] ? 'Sembunyikan' : 'Tampilkan Semua'}
                         </button>

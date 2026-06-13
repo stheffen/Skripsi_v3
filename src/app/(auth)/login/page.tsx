@@ -4,14 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { AlertTriangle, Eye, EyeOff, LogIn } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, LogIn, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 const loginSchema = z.object({
   email: z
@@ -59,164 +58,177 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-slate-900 via-blue-950 to-slate-950 items-center justify-center p-12 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-md text-center">
-          <div className="w-20 h-20 bg-linear-to-br from-blue-500 to-blue-700 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/30">
-            <AlertTriangle size={36} className="text-white" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-5/12 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col relative overflow-hidden">
+        {/* Abstract Background Elements */}
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+        
+        <div className="p-12 flex-1 flex flex-col justify-center relative z-10">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-blue-500/20">
+            <AlertTriangle size={32} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
-            Sistem Early Warning
+          
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
+            Akademik<span className="text-blue-600 dark:text-blue-500">Pro</span>
             <br />
-            <span className="text-blue-400">Risiko Akademik</span>
+            <span className="text-2xl text-slate-500 dark:text-slate-400 font-medium">Early Warning System</span>
           </h1>
-          <p className="text-slate-400 text-base leading-relaxed">
-            Deteksi dini risiko akademik mahasiswa menggunakan metode{" "}
-            <strong className="text-blue-300">Logika Fuzzy Mamdani</strong>{" "}
-            untuk pengambilan keputusan yang lebih baik.
+          
+          <p className="text-slate-600 dark:text-slate-400 text-lg mb-12 leading-relaxed max-w-md">
+            Deteksi dini profil risiko akademik mahasiswa menggunakan ketepatan <strong className="text-slate-900 dark:text-white font-semibold">Logika Fuzzy Mamdani</strong>.
           </p>
-          <div className="mt-8 grid grid-cols-3 gap-4">
-            {[
-              ["52", "Mata Kuliah"],
-              ["27", "Fuzzy Rules"],
-              ["14", "Semester"],
-            ].map(([val, label]) => (
-              <Card
-                key={label}
-                className="bg-white/5 border-white/10 rounded-xl p-4"
-              >
-                <p className="text-2xl font-bold text-blue-400">{val}</p>
-                <p className="text-xs text-slate-500 mt-1">{label}</p>
-              </Card>
-            ))}
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 backdrop-blur-sm">
+              <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-700">
+                <span className="text-lg font-bold text-blue-600">52</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Mata Kuliah</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Terintegrasi dalam sistem</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 backdrop-blur-sm">
+              <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-700">
+                <span className="text-lg font-bold text-blue-600">27</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Fuzzy Rules</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Parameter defuzzifikasi akurat</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
-              <AlertTriangle size={20} className="text-white" />
+      {/* Right Panel - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-6 relative">
+        {/* Glow behind form in dark mode */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl hidden dark:block" />
+        
+        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
+          
+          <div className="flex items-center gap-3 mb-10 lg:hidden">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <AlertTriangle size={24} className="text-white" />
             </div>
             <div>
-              <p className="text-xs font-bold text-blue-400">EARLY WARNING</p>
-              <p className="text-xs text-slate-500">Risiko Akademik</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Akademik<span className="text-blue-600">Pro</span></p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-100 mb-1">
-            Selamat Datang
-          </h2>
-          <p className="text-slate-400 text-sm mb-8">
-            Masuk untuk melanjutkan ke sistem
-          </p>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
-              <AlertTriangle size={16} className="shrink-0" />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-slate-300">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                {...register("email")}
-                className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.email ? "border-red-500" : ""}`}
-                placeholder="nama@email.com"
-              />
-              {errors.email && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.email.message}
-                </p>
-              )}
+          <div className="bg-white/70 dark:bg-slate-900/50 backdrop-blur-xl border border-white dark:border-slate-800 p-8 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                Selamat Datang
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Silakan masuk menggunakan kredensial Anda
+              </p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-slate-300">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPass ? "text" : "password"}
-                  {...register("password")}
-                  className={`bg-slate-950 border-slate-800 pr-12 text-slate-300 focus-visible:ring-blue-500 ${errors.password ? "border-red-500" : ""}`}
-                  placeholder="Minimal 8 karakter"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-                >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                <AlertTriangle size={18} className="shrink-0" />
+                <span className="font-medium">{error}</span>
               </div>
-              {errors.password && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.password.message}
-                </p>
-              )}
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                  Alamat Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                  placeholder="mahasiswa@kampus.ac.id"
+                />
+                {errors.email && (
+                  <p className="text-xs font-medium text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                    Kata Sandi
+                  </Label>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    {...register("password")}
+                    className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 pr-12 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                  >
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs font-medium text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] mt-2 group font-semibold text-base"
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Masuk ke Sistem
+                    <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">
+                Akses Demonstrasi
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-xs text-slate-500 mb-1">Mahasiswa</p>
+                  <p className="font-medium text-slate-900 dark:text-white truncate" title="demo@gmail.com">demo@gmail.com</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-xs text-slate-500 mb-1">Dosen Wali</p>
+                  <p className="font-medium text-slate-900 dark:text-white truncate" title="demodosen@gmail.com">demodosen@gmail.</p>
+                </div>
+              </div>
+              <p className="text-center text-xs text-slate-500 mt-3">
+                Sandi umum: <strong className="text-slate-700 dark:text-slate-300">demo1234</strong>
+              </p>
             </div>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <LogIn size={18} className="mr-2" />
-                  Masuk
-                </>
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-slate-400 mt-6">
-            Belum punya akun?{" "}
+          </div>
+          
+          <p className="text-center text-sm text-slate-500 mt-8">
+            Belum terdaftar dalam sistem?{" "}
             <Link
               href="/register"
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
-              Daftar sekarang
+              Buat akun baru
             </Link>
           </p>
-
-          {/* Demo credentials */}
-          <Card className="mt-6 p-4 bg-slate-800/50 border-slate-700/50">
-            <p className="text-xs font-semibold text-slate-400 mb-2">
-              🔑 Akun Demo:
-            </p>
-            <div className="space-y-1 text-xs text-slate-500">
-              <p>
-                Mahasiswa:{" "}
-                <span className="text-slate-300">demo@gmail.com</span>
-              </p>
-              <p>
-                Dosen:{" "}
-                <span className="text-slate-300">demodosen@gmail.com</span>
-              </p>
-              <p>
-                Password: <span className="text-slate-300">demo1234</span>
-              </p>
-            </div>
-          </Card>
         </div>
       </div>
     </div>

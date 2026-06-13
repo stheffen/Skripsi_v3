@@ -42,43 +42,35 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
       {/* Backdrop mobile */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-20 lg:hidden"
           onClick={onClose}
         />
       )}
 
       <aside className={`
-        fixed top-0 left-0 h-full w-64 z-30
-        bg-slate-900 border-r border-slate-800
-        flex flex-col
-        transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800
+        transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
         ${open ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-auto
       `}>
         {/* Logo */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-              <AlertTriangle size={18} className="text-white" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-blue-400 leading-none">EARLY WARNING</p>
-              <p className="text-xs text-slate-500 mt-0.5">Risiko Akademik</p>
-            </div>
+        <div className="h-14 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
+            <GraduationCap className="text-white" size={20} />
           </div>
-          <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
-            <X size={18} />
+          <span className="text-slate-900 dark:text-white font-bold text-lg tracking-tight">Akademik<span className="text-blue-500">Pro</span></span>
+          <button onClick={onClose} className="ml-auto lg:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+            <X size={20} />
           </button>
         </div>
 
         {/* User info */}
-        <div className="p-4 border-b border-slate-800">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {user?.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-100 truncate">{user?.name || 'Loading...'}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Loading...'}</p>
               <p className="text-xs text-slate-500 truncate">
                 {user?.role === 'dosen' ? 'Dosen Pembimbing' : `NIM: ${user?.nim || '-'}`}
               </p>
@@ -87,41 +79,43 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
           {user?.role === 'mahasiswa' && (
             <div className="mt-2 flex items-center gap-1.5">
               <GraduationCap size={12} className="text-blue-400" />
-              <span className="text-xs text-slate-400">Semester {user?.semester_aktif || '-'}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Semester {user?.semester_aktif || '-'}</span>
             </div>
           )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => {
-            const isActive = pathname === to || pathname?.startsWith(`${to}/`);
+          {navItems.map((item) => {
+            const isActive = pathname === item.to;
             return (
               <Link
-                key={to}
-                href={to}
+                key={item.to}
+                href={item.to}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
-                }`}
+                className={`
+                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
+                  ${isActive
+                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200'
+                  }
+                `}
               >
-                <Icon size={17} />
-                {label}
+                <item.icon size={17} />
+                {item.label}
               </Link>
             );
           })}
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors group"
           >
-            <LogOut size={17} />
-            Logout
+            <LogOut size={18} className="text-red-500/70 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
+            Keluar
           </button>
         </div>
       </aside>

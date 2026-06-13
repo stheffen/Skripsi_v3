@@ -17,16 +17,16 @@ function RiskBadge({ kategori }: { kategori: string | null | undefined }) {
     return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400">Belum Dianalisis</span>;
   }
   const colorClass = 
-    kategori === 'Tinggi' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-    kategori === 'Sedang' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-    'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+    kategori === 'Tinggi' ? 'bg-risk-tinggi/10 text-risk-tinggi border border-risk-tinggi/20 dark:bg-transparent dark:text-risk-tinggi dark:border-risk-tinggi/50 dark:shadow-[0_0_10px_var(--color-risk-tinggi)]' :
+    kategori === 'Sedang' ? 'bg-risk-sedang/10 text-risk-sedang border border-risk-sedang/20 dark:bg-transparent dark:text-risk-sedang dark:border-risk-sedang/50 dark:shadow-[0_0_10px_var(--color-risk-sedang)]' :
+    'bg-risk-rendah/10 text-risk-rendah border border-risk-rendah/20 dark:bg-transparent dark:text-risk-rendah dark:border-risk-rendah/50 dark:shadow-[0_0_10px_var(--color-risk-rendah)]';
   
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>{kategori}</span>;
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${colorClass}`}>{kategori}</span>;
 }
 
 function RiskGauge({ value, kategori }: { value: number, kategori: string }) {
   const pct = Math.min(100, Math.max(0, value));
-  const color = kategori === 'Tinggi' ? '#ef4444' : kategori === 'Sedang' ? '#f59e0b' : '#10b981';
+  const color = kategori === 'Tinggi' ? 'var(--color-risk-tinggi)' : kategori === 'Sedang' ? 'var(--color-risk-sedang)' : 'var(--color-risk-rendah)';
   const angle = (pct / 100) * 180 - 90;
 
   return (
@@ -66,10 +66,10 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
             Halo, {user?.name?.split(' ')[0]} 👋
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
             Semester {user?.semester_aktif}
             {user?.angkatan && ` — Angkatan ${user.angkatan}`}
           </p>
@@ -78,62 +78,66 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-slate-400">IPK Kumulatif</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">IPK Kumulatif</p>
             <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <TrendingUp size={16} className="text-blue-400" />
+              <TrendingUp size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-100">{akademik.ipk.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.ipk.toFixed(2)}</p>
           <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
         </div>
         
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-slate-400">IPS Semester {user?.semester_aktif}</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">IPS Semester {user?.semester_aktif}</p>
             <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Activity size={16} className="text-purple-400" />
+              <Activity size={16} className="text-purple-600 dark:text-purple-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-100">{akademik.ips.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.ips.toFixed(2)}</p>
           <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-slate-400">MK Bermasalah</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">MK Bermasalah</p>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               akademik.mk_bermasalah > 0 ? 'bg-red-500/20' : 'bg-emerald-500/20'
             }`}>
               {akademik.mk_bermasalah > 0
-                ? <AlertTriangle size={16} className="text-red-400" />
-                : <CheckCircle size={16} className="text-emerald-400" />
+                ? <AlertTriangle size={16} className="text-red-600 dark:text-red-400" />
+                : <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400" />
               }
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-100">{akademik.mk_bermasalah}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.mk_bermasalah}</p>
           <p className="text-xs text-slate-500 mt-1">nilai D / E</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-slate-400">Total SKS Lulus</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total SKS Lulus</p>
             <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center">
-              <BookOpen size={16} className="text-indigo-400" />
+              <BookOpen size={16} className="text-indigo-600 dark:text-indigo-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-100">{akademik.total_sks_lulus}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.total_sks_lulus}</p>
           <p className="text-xs text-slate-500 mt-1">dari {akademik.total_sks_tempuh} SKS</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gauge Risiko */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center hover:border-slate-700 transition-colors">
+        <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col items-center hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm
+          ${risiko?.kategori === 'Tinggi' ? 'dark:shadow-[0_0_20px_var(--color-risk-tinggi)] dark:border-risk-tinggi/30 border-l-4 border-l-risk-tinggi' : ''}
+          ${risiko?.kategori === 'Sedang' ? 'dark:shadow-[0_0_20px_var(--color-risk-sedang)] dark:border-risk-sedang/30 border-l-4 border-l-risk-sedang' : ''}
+          ${risiko?.kategori === 'Rendah' || risiko?.kategori === 'Aman' ? 'dark:shadow-[0_0_20px_var(--color-risk-rendah)] dark:border-risk-rendah/30 border-l-4 border-l-risk-rendah' : ''}
+        `}>
           <div className="flex items-center justify-between w-full mb-4">
-            <h3 className="font-semibold text-slate-200">Status Risiko</h3>
-            <Link href="/hasil-analisis" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200">Status Risiko</h3>
+            <Link href="/hasil-analisis" className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
               Detail <ArrowRight size={12} />
             </Link>
           </div>
@@ -159,10 +163,10 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
         </div>
 
         {/* Tren IPS */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:col-span-2 hover:border-slate-700 transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 lg:col-span-2 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-semibold text-slate-200">Tren IPS per Semester</h3>
-            <Link href="/riwayat-analisis" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200">Tren IPS per Semester</h3>
+            <Link href="/riwayat-analisis" className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
               Riwayat <ArrowRight size={12} />
             </Link>
           </div>
@@ -177,12 +181,12 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
           { href: '/hasil-analisis', icon: BarChart3,    title: 'Analisis Risiko',    desc: 'Hitung status risiko akademik',    color: 'from-purple-600 to-purple-800' },
         ].map(({ href, icon: Icon, title, desc, color }) => (
           <Link key={href} href={href}
-            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-start gap-4 hover:border-slate-600 hover:bg-slate-800/80 transition-all duration-300 group cursor-pointer">
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-start gap-4 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all duration-300 group cursor-pointer shadow-sm">
             <div className={`w-12 h-12 bg-linear-to-br ${color} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
               <Icon size={20} className="text-white" />
             </div>
             <div>
-              <p className="font-semibold text-slate-200 text-sm group-hover:text-white transition-colors">{title}</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-200 text-sm group-hover:text-blue-600 dark:group-hover:text-white transition-colors">{title}</p>
               <p className="text-xs text-slate-500 mt-1">{desc}</p>
             </div>
           </Link>

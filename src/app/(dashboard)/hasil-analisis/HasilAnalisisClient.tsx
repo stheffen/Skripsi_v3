@@ -15,13 +15,22 @@ const HasilRadarChart = dynamic(
 
 function RiskBadge({ kategori, large }: any) {
   const map: Record<string, any> = {
-    Rendah: { cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30", icon: CheckCircle },
-    Sedang: { cls: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30", icon: AlertTriangle },
-    Tinggi: { cls: "bg-red-500/20 text-red-400 border border-red-500/30", icon: TrendingDown },
+    Rendah: { 
+      cls: "bg-risk-rendah/10 text-risk-rendah border border-risk-rendah/20 dark:bg-transparent dark:text-risk-rendah dark:border-risk-rendah/50 dark:shadow-[0_0_10px_var(--color-risk-rendah)]", 
+      icon: CheckCircle 
+    },
+    Sedang: { 
+      cls: "bg-risk-sedang/10 text-risk-sedang border border-risk-sedang/20 dark:bg-transparent dark:text-risk-sedang dark:border-risk-sedang/50 dark:shadow-[0_0_10px_var(--color-risk-sedang)]", 
+      icon: AlertTriangle 
+    },
+    Tinggi: { 
+      cls: "bg-risk-tinggi/10 text-risk-tinggi border border-risk-tinggi/20 dark:bg-transparent dark:text-risk-tinggi dark:border-risk-tinggi/50 dark:shadow-[0_0_10px_var(--color-risk-tinggi)]", 
+      icon: TrendingDown 
+    },
   };
   const { cls, icon: Icon } = map[kategori] || map["Rendah"];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${cls} ${large ? "text-sm px-4 py-2" : "text-xs px-3 py-1"}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-bold tracking-wider uppercase ${cls} ${large ? "text-sm px-4 py-2" : "text-xs px-3 py-1"}`}>
       <Icon size={large ? 16 : 12} />
       Risiko {kategori}
     </span>
@@ -32,11 +41,11 @@ function MembershipBar({ label, value, color }: any) {
   const pct = Math.round(value * 100);
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-slate-400 w-16 text-right">{label}</span>
-      <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+      <span className="text-xs text-slate-500 dark:text-slate-400 w-16 text-right">{label}</span>
+      <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <span className="text-xs font-mono text-slate-300 w-10">{value.toFixed(3)}</span>
+      <span className="text-xs font-mono text-slate-600 dark:text-slate-300 w-10">{value.toFixed(3)}</span>
     </div>
   );
 }
@@ -44,25 +53,25 @@ function MembershipBar({ label, value, color }: any) {
 function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
   if (!mkDetail || mkDetail.length === 0) return null;
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-800">
+    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-slate-800/80">
-            <th className="text-left px-3 py-2 text-slate-400 font-medium">Kode</th>
-            <th className="text-left px-3 py-2 text-slate-400 font-medium">Nama MK</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">SKS</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">Nilai</th>
-            <th className="text-center px-3 py-2 text-slate-400 font-medium">Sem</th>
+          <tr className="bg-slate-50 dark:bg-slate-800/80">
+            <th className="text-left px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Kode</th>
+            <th className="text-left px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Nama MK</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">SKS</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Nilai</th>
+            <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">Sem</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {mkDetail.map((mk, i) => (
-            <tr key={i} className={`transition hover:bg-slate-800/30 ${mk.nilai === "E" ? "bg-red-500/5" : "bg-orange-500/5"}`}>
-              <td className="px-3 py-2 font-mono text-slate-400">{mk.kode}</td>
-              <td className="px-3 py-2 text-slate-300">{mk.nama}</td>
-              <td className="px-3 py-2 text-center text-slate-400">{mk.sks}</td>
+            <tr key={i} className={`transition hover:bg-slate-100 dark:hover:bg-slate-800/30 ${mk.nilai === "E" ? "bg-red-50 dark:bg-red-500/5" : "bg-orange-50 dark:bg-orange-500/5"}`}>
+              <td className="px-3 py-2 font-mono text-slate-600 dark:text-slate-400">{mk.kode}</td>
+              <td className="px-3 py-2 text-slate-900 dark:text-slate-300">{mk.nama}</td>
+              <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400">{mk.sks}</td>
               <td className="px-3 py-2 text-center">
-                <span className={`font-bold px-2 py-0.5 rounded-lg ${mk.nilai === "E" ? "bg-red-500/20 text-red-300" : "bg-orange-500/20 text-orange-300"}`}>{mk.nilai}</span>
+                <span className={`font-bold px-2 py-0.5 rounded-lg ${mk.nilai === "E" ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300" : "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300"}`}>{mk.nilai}</span>
               </td>
               <td className="px-3 py-2 text-center text-slate-500">{mk.semester}</td>
             </tr>
@@ -114,16 +123,29 @@ function MKBelumDiambilTable({ mkList }: { mkList: any[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {displayed.map((mk: any, i: number) => (
-              <tr key={i} className="hover:bg-slate-800/30 transition">
-                <td className="px-3 py-2 font-mono text-slate-400">{mk.kode}</td>
-                <td className="px-3 py-2 text-slate-300">{mk.nama}</td>
-                <td className="px-3 py-2 text-center text-slate-400">{mk.sks}</td>
-                <td className="px-3 py-2 text-center">
-                  <span className="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-medium">Sem {mk.semester}</span>
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${mk.jenis === "Wajib" ? "bg-slate-700 text-slate-300" : "bg-amber-500/20 text-amber-300"}`}>{mk.jenis}</span>
+            {Object.entries(grouped).map(([sem, mkSem]: [string, any]) => (
+              <tr key={sem}>
+                <td colSpan={5}>
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div className="bg-slate-50 dark:bg-slate-800/80 px-3 py-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Semester {sem}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md">{mkSem.length} MK</span>
+                    </div>
+                    <table className="w-full text-xs">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 bg-white dark:bg-transparent">
+                        {mkSem.map((mk: any, i: number) => (
+                          <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                            <td className="px-3 py-2 font-mono text-slate-500 dark:text-slate-400 w-24">{mk.kode}</td>
+                            <td className="px-3 py-2 text-slate-800 dark:text-slate-300 font-medium">{mk.nama}</td>
+                            <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 w-12">{mk.sks} SKS</td>
+                            <td className="px-3 py-2 text-right w-24">
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase ${mk.jenis === "Wajib" ? "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300" : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"}`}>{mk.jenis}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -194,17 +216,17 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
       </div>
 
       {/* Trigger Panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-200 mb-1">Hitung Analisis Baru</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-200 mb-1">Hitung Analisis Baru</p>
             <p className="text-xs text-slate-500">
               Pilih semester (maks. Semester {maxSemester} berdasarkan angkatan {user?.angkatan || "-"})
             </p>
           </div>
           <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
             <select
-              className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               value={semester}
               onChange={(e) => setSemester(Number(e.target.value))}
             >
@@ -239,14 +261,14 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
       ) : (
         <>
           {/* Result Header */}
-          <div className={`rounded-2xl p-6 border ${
-            result.kategori === "Tinggi" ? "border-red-500/30 bg-red-500/5" :
-            result.kategori === "Sedang" ? "border-amber-500/30 bg-amber-500/5" :
-            "border-emerald-500/30 bg-emerald-500/5"
+          <div className={`rounded-2xl p-6 border shadow-sm ${
+            result.kategori === "Tinggi" ? "bg-white dark:bg-slate-900 border-l-4 border-l-risk-tinggi dark:border-risk-tinggi/30 dark:shadow-[0_0_20px_var(--color-risk-tinggi)]" :
+            result.kategori === "Sedang" ? "bg-white dark:bg-slate-900 border-l-4 border-l-risk-sedang dark:border-risk-sedang/30 dark:shadow-[0_0_20px_var(--color-risk-sedang)]" :
+            "bg-white dark:bg-slate-900 border-l-4 border-l-risk-rendah dark:border-risk-rendah/30 dark:shadow-[0_0_20px_var(--color-risk-rendah)]"
           }`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div>
-                <p className="text-xs text-slate-400 mb-2">Hasil Analisis Semester {result.semester}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Hasil Analisis Semester {result.semester}</p>
                 <RiskBadge kategori={result.kategori} large />
                 <p className="text-xs text-slate-500 mt-3">
                   {new Date(result.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -258,16 +280,16 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
                 )}
               </div>
               <div className="sm:ml-auto grid grid-cols-3 gap-6 text-center w-full sm:w-auto mt-4 sm:mt-0">
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-                  <p className="text-2xl font-bold text-slate-100">{result.ips?.toFixed(2)}</p>
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ips?.toFixed(2)}</p>
                   <p className="text-xs text-slate-500 mt-1">IPS</p>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-                  <p className="text-2xl font-bold text-slate-100">{result.ipk?.toFixed(2)}</p>
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ipk?.toFixed(2)}</p>
                   <p className="text-xs text-slate-500 mt-1">IPK</p>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-                  <p className={`text-2xl font-bold ${result.mk_bermasalah > 0 ? "text-red-400" : "text-emerald-400"}`}>{result.mk_bermasalah}</p>
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                  <p className={`text-2xl font-bold ${result.mk_bermasalah > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>{result.mk_bermasalah}</p>
                   <p className="text-xs text-slate-500 mt-1">MK D/E</p>
                 </div>
               </div>
@@ -277,8 +299,8 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Fuzzifikasi */}
             {fuzzyDetail?.fuzzifikasi && (
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-colors">
-                <h3 className="font-semibold text-slate-200 mb-5 text-sm flex items-center gap-2">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+                <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-5 text-sm flex items-center gap-2">
                   <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" /> Fuzzifikasi Input
                 </h3>
                 <div className="space-y-6">
@@ -324,9 +346,9 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
 
           {/* MK Bermasalah */}
           {result.mk_bermasalah_detail?.length > 0 && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-colors">
-              <h3 className="font-semibold text-slate-200 mb-4 text-sm flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-red-400 rounded-full" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 text-sm flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-red-500 dark:bg-red-400 rounded-full" />
                 Mata Kuliah Perlu Diperbaiki ({result.mk_bermasalah_detail.length} MK)
               </h3>
               <MKBermasalahTable mkDetail={result.mk_bermasalah_detail} />
@@ -334,9 +356,9 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
           )}
 
           {/* MK Belum Diambil */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-colors">
-            <h3 className="font-semibold text-slate-200 mb-4 text-sm flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-amber-400 rounded-full" />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 text-sm flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-amber-500 dark:bg-amber-400 rounded-full" />
               Mata Kuliah Belum Diambil
             </h3>
             <MKBelumDiambilTable mkList={mkBelumDiambil} />
@@ -344,29 +366,29 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
 
           {/* Konsekuensi */}
           {(result.kategori === "Tinggi" || result.kategori === "Sedang") && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
               <button
                 onClick={() => setShowKonsekuensi(!showKonsekuensi)}
-                className={`w-full flex items-center justify-between p-5 hover:bg-slate-800/50 transition border-l-4 ${result.kategori === "Tinggi" ? "border-red-500" : "border-amber-500"}`}
+                className={`w-full flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-l-4 ${result.kategori === "Tinggi" ? "border-l-risk-tinggi" : "border-l-risk-sedang"}`}
               >
                 <div className="flex items-center gap-3">
-                  <TriangleAlert size={18} className={result.kategori === "Tinggi" ? "text-red-400" : "text-amber-400"} />
-                  <span className="font-semibold text-slate-200 text-sm">Apa yang Terjadi Jika Dibiarkan?</span>
+                  <TriangleAlert size={18} className={result.kategori === "Tinggi" ? "text-risk-tinggi" : "text-risk-sedang"} />
+                  <span className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Apa yang Terjadi Jika Dibiarkan?</span>
                 </div>
-                {showKonsekuensi ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                {showKonsekuensi ? <ChevronUp size={18} className="text-slate-500" /> : <ChevronDown size={18} className="text-slate-500" />}
               </button>
               {showKonsekuensi && (
-                <div className={`p-5 border-t border-slate-800 ${result.kategori === "Tinggi" ? "bg-red-500/5" : "bg-amber-500/5"}`}>
+                <div className={`p-5 border-t border-slate-200 dark:border-slate-800 ${result.kategori === "Tinggi" ? "bg-red-50 dark:bg-red-500/5" : "bg-orange-50 dark:bg-amber-500/5"}`}>
                   {result.kategori === "Tinggi" ? (
-                    <div className="space-y-3 text-sm text-slate-300">
-                      <p>- Risiko <strong className="text-red-400">Drop Out (DO)</strong> meningkat jika IPK terus di bawah 2.0 hingga evaluasi akademik.</p>
+                    <div className="space-y-3 text-sm text-slate-800 dark:text-slate-300">
+                      <p>- Risiko <strong className="text-red-600 dark:text-red-400">Drop Out (DO)</strong> meningkat jika IPK terus di bawah 2.0 hingga evaluasi akademik.</p>
                       <p>- Mata kuliah dengan nilai D/E <strong>harus diulang</strong>, menambah beban studi di semester mendatang.</p>
                       <p>- Prasyarat MK di semester atas tidak terpenuhi - berpotensi <strong>menunda kelulusan 1-2 semester</strong>.</p>
                       <p>- IPK rendah dapat menghambat akses ke program magang, beasiswa, dan peluang karir.</p>
                     </div>
                   ) : (
-                    <div className="space-y-3 text-sm text-slate-300">
-                      <p>- Risiko bisa <strong className="text-red-400">meningkat ke Tinggi</strong> jika performa tidak membaik semester berikutnya.</p>
+                    <div className="space-y-3 text-sm text-slate-800 dark:text-slate-300">
+                      <p>- Risiko bisa <strong className="text-red-600 dark:text-red-400">meningkat ke Tinggi</strong> jika performa tidak membaik semester berikutnya.</p>
                       <p>- MK bermasalah yang tidak diperbaiki akan terus <strong>menurunkan IPK kumulatif</strong>.</p>
                       <p>- Perbaikan yang terlambat berpotensi <strong>memperlambat kelulusan</strong>.</p>
                     </div>
