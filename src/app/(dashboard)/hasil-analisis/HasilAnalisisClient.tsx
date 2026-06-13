@@ -359,16 +359,16 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
                 <div className={`p-5 border-t border-slate-800 ${result.kategori === "Tinggi" ? "bg-red-500/5" : "bg-amber-500/5"}`}>
                   {result.kategori === "Tinggi" ? (
                     <div className="space-y-3 text-sm text-slate-300">
-                      <p>?? Risiko <strong className="text-red-400">Drop Out (DO)</strong> meningkat jika IPK terus di bawah 2.0 hingga evaluasi akademik.</p>
-                      <p>?? Mata kuliah dengan nilai D/E <strong>harus diulang</strong>, menambah beban studi di semester mendatang.</p>
-                      <p>?? Prasyarat MK di semester atas tidak terpenuhi — berpotensi <strong>menunda kelulusan 1-2 semester</strong>.</p>
-                      <p>?? IPK rendah dapat menghambat akses ke program magang, beasiswa, dan peluang karir.</p>
+                      <p>- Risiko <strong className="text-red-400">Drop Out (DO)</strong> meningkat jika IPK terus di bawah 2.0 hingga evaluasi akademik.</p>
+                      <p>- Mata kuliah dengan nilai D/E <strong>harus diulang</strong>, menambah beban studi di semester mendatang.</p>
+                      <p>- Prasyarat MK di semester atas tidak terpenuhi - berpotensi <strong>menunda kelulusan 1-2 semester</strong>.</p>
+                      <p>- IPK rendah dapat menghambat akses ke program magang, beasiswa, dan peluang karir.</p>
                     </div>
                   ) : (
                     <div className="space-y-3 text-sm text-slate-300">
-                      <p>?? Risiko bisa <strong className="text-red-400">meningkat ke Tinggi</strong> jika performa tidak membaik semester berikutnya.</p>
-                      <p>?? MK bermasalah yang tidak diperbaiki akan terus <strong>menurunkan IPK kumulatif</strong>.</p>
-                      <p>?? Perbaikan yang terlambat berpotensi <strong>memperlambat kelulusan</strong>.</p>
+                      <p>- Risiko bisa <strong className="text-red-400">meningkat ke Tinggi</strong> jika performa tidak membaik semester berikutnya.</p>
+                      <p>- MK bermasalah yang tidak diperbaiki akan terus <strong>menurunkan IPK kumulatif</strong>.</p>
+                      <p>- Perbaikan yang terlambat berpotensi <strong>memperlambat kelulusan</strong>.</p>
                     </div>
                   )}
                 </div>

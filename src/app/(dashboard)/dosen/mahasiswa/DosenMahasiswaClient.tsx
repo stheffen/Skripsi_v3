@@ -70,7 +70,7 @@ export default function DosenMahasiswaClient({ mahasiswaList }: { mahasiswaList:
                     <p className="text-base font-semibold text-slate-200 truncate">{m.name}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-slate-500 font-mono">{m.nim || '-'}</span>
-                      <span className="text-slate-700">•</span>
+                      <span className="text-slate-700">&bull;</span>
                       <span className="text-xs text-slate-500 flex items-center gap-1"><GraduationCap size={12}/> Sem {m.semester_aktif}</span>
                     </div>
                   </div>

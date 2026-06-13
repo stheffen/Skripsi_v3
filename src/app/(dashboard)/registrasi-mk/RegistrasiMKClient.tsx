@@ -189,7 +189,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
                     <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-slate-500">{mk.kode}</span>
-                      <span className="text-slate-700">•</span>
+                      <span className="text-slate-700">&bull;</span>
                       <span className="text-xs text-slate-500">{mk.sks} SKS</span>
                       <span className={`text-xs px-1.5 py-0.5 rounded ${mk.jenis === "Wajib" ? "bg-slate-700/50 text-slate-400" : "bg-amber-500/20 text-amber-300"}`}>
                         {mk.jenis}
@@ -202,14 +202,13 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
                     </div>
                   </div>
 
-                  {/* Nilai Selector */}
-                  <div className="self-end sm:self-auto mt-2 sm:mt-0">
+                  <div className="self-end sm:self-auto mt-2 sm:mt-0 flex items-center">
                     {isAlreadyRegistered ? (
-                      <span className="text-xs text-emerald-400 font-medium">? Sudah diregistrasi</span>
+                      <span className="text-xs text-emerald-400 font-medium flex items-center gap-1"><CheckCircle size={12} /> Sudah diregistrasi</span>
                     ) : isSelected ? (
                       <NilaiSelector mkId={mk.id} currentNilai={nilaiMap[mk.id] ?? null} onChange={handleNilai} />
                     ) : (
-                      <span className="text-xs text-slate-600">— Pilih MK terlebih dahulu</span>
+                      <span className="text-xs text-slate-600">- Pilih MK terlebih dahulu</span>
                     )}
                   </div>
                 </div>
