@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           nim: user.nim,
           semester_aktif: user.semester_aktif,
+          angkatan: user.angkatan,
         };
       }
     })
@@ -55,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.nim = user.nim;
         token.semester_aktif = user.semester_aktif;
+        token.angkatan = (user as any).angkatan;
       }
       if (trigger === "update" && session?.semester_aktif !== undefined) {
         token.semester_aktif = session.semester_aktif;
@@ -69,6 +71,7 @@ export const authOptions: NextAuthOptions = {
           role: token.role as string,
           nim: token.nim as string | null,
           semester_aktif: token.semester_aktif as number | null,
+          angkatan: token.angkatan as string | null,
         };
       }
       return session;
