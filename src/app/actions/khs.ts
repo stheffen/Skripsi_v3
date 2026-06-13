@@ -59,6 +59,58 @@ export async function getSemesterKHS(userId: number, semester: number) {
   return { wajib, pilihan, pindahan };
 }
 
+export async function getCurriculumNilai(userId: number, semester: number) {
+  // Ambil semua MK yang memang berada di semester kurikulum ini
+  const mks = await prisma.mataKuliah.findMany({
+    where: { semester: semester },
+    orderBy: { nama: 'asc' }
+  });
+
+  // Ambil KHS user untuk melihat apakah sudah ada nilainya
+  const khsList = await prisma.khs.findMany({
+    where: { 
+      user_id: userId,
+      mata_kuliah_id: { in: mks.map(m => m.id) }
+    }
+  });
+
+  const khsMap = new Map(khsList.map(k => [k.mata_kuliah_id, k]));
+
+  const wajib: any[] = [];
+  const pilihan: Record<string, any[]> = {};
+  const pindahan: any[] = []; // Tetap kembalikan array kosong agar kompatibel dengan UI
+
+  for (const mk of mks) {
+    const isPilihan = mk.jenis === "Pilihan";
+    const khs = khsMap.get(mk.id);
+
+    const data = {
+      khs_id: khs?.id ?? null,
+      mk_id: mk.id,
+      kode: mk.kode,
+      nama: mk.nama,
+      sks: mk.sks,
+      jenis: mk.jenis,
+      semester_asli: mk.semester,
+      semester_override: khs?.semester_override ?? null,
+      semester_efektif: mk.semester,
+      nilai: khs?.nilai ?? null,
+      bobot_nilai: khs?.bobot_nilai ?? null,
+      is_pindahan: false,
+    };
+
+    if (isPilihan) {
+      const groupKey = `Pilihan_Sem_${semester}`; 
+      if (!pilihan[groupKey]) pilihan[groupKey] = [];
+      pilihan[groupKey].push(data);
+    } else {
+      wajib.push(data);
+    }
+  }
+
+  return { wajib, pilihan, pindahan };
+}
+
 export async function batchUpdateKHS(userId: number, values: { khs_id: number; nilai: string }[]) {
   try {
     for (const val of values) {

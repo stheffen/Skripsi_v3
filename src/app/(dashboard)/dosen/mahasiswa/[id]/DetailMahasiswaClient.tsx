@@ -6,7 +6,7 @@ import {
   BookX, GraduationCap, FolderOpen, ChevronDown, ChevronUp, TriangleAlert
 } from "lucide-react";
 import Link from "next/link";
-import { getSemesterKHS } from "@/app/actions/khs";
+import { getCurriculumNilai } from "@/app/actions/khs";
 
 const NILAI_COLORS: Record<string, string> = {
   A: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
@@ -95,7 +95,7 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
   const fetchSemester = useCallback(async (sem: number) => {
     setLoadingSem(true);
     try {
-      const data = await getSemesterKHS(mahasiswa.id, sem);
+      const data = await getCurriculumNilai(mahasiswa.id, sem);
       setSemData(data);
     } catch (err) {
       console.error(err);
@@ -241,18 +241,17 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
                 )}
 
                 {Object.entries(semData.pilihan || {}).map(([kelompok, mks]: any) => (
-                  <div key={kelompok} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                    <div className="flex items-center gap-3 p-4 border-b border-slate-800 bg-amber-500/5">
-                      <FolderOpen size={18} className="text-amber-400" />
-                      <h3 className="font-semibold text-slate-200">Mata Kuliah Pilihan ({kelompok})</h3>
+                  mks.length > 0 ? (
+                    <div key={kelompok} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                      <div className="flex items-center gap-3 p-4 border-b border-slate-800 bg-amber-500/5">
+                        <FolderOpen size={18} className="text-amber-400" />
+                        <h3 className="font-semibold text-slate-200">Mata Kuliah Pilihan ({kelompok})</h3>
+                      </div>
+                      <div className="divide-y divide-slate-800">
+                        {mks.map((item: any) => <MKRowReadonly key={item.mk_id} item={item} />)}
+                      </div>
                     </div>
-                    <div className="divide-y divide-slate-800">
-                      {mks.filter((m: any) => m.nilai).map((item: any) => <MKRowReadonly key={item.mk_id} item={item} />)}
-                      {mks.filter((m: any) => m.nilai).length === 0 && (
-                        <div className="p-6 text-center text-sm text-slate-500">Belum ada MK pilihan yang diambil.</div>
-                      )}
-                    </div>
-                  </div>
+                  ) : null
                 ))}
               </div>
             ) : null}
