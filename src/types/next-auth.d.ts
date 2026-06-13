@@ -9,6 +9,7 @@ declare module "next-auth" {
       role: string;
       nim?: string | null;
       semester_aktif?: number | null;
+      angkatan?: string | null;
     };
   }
 
@@ -19,6 +20,7 @@ declare module "next-auth" {
     role: string;
     nim?: string | null;
     semester_aktif?: number | null;
+    angkatan?: string | null;
   }
 }
 
@@ -28,5 +30,6 @@ declare module "next-auth/jwt" {
     role: string;
     nim?: string | null;
     semester_aktif?: number | null;
+    angkatan?: string | null;
   }
 }
