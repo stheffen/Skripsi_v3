@@ -21,8 +21,12 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       where: { semester: semesterAktif + 1 }
     });
 
-    // Fuzzy Mamdani processing
-    const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah);
+    // Ambil angkatan mahasiswa untuk menentukan aturan fuzzy (9 vs 27)
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
+    const angkatan = user?.angkatan ? parseInt(user.angkatan) : null;
+
+    // Fuzzy Mamdani processing (angkatan >= 2026 -> 9 aturan, else 27 aturan)
+    const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah, angkatan);
 
     // Generate recommendation
     const rekomendasi = RekomendasiService.buat(

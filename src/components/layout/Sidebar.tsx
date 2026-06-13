@@ -5,16 +5,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, BookOpen, BarChart3, History,
-  FlaskConical, User, LogOut, GraduationCap, Users, X, AlertTriangle
+  FlaskConical, User, LogOut, GraduationCap, Users, X, AlertTriangle, ClipboardList
 } from 'lucide-react';
 import { useState } from 'react';
 
 const mahasiswaNav = [
-  { to: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/input-nilai', icon: BookOpen,        label: 'Input Nilai' },
-  { to: '/hasil-analisis', icon: BarChart3,     label: 'Hasil Analisis' },
-  { to: '/riwayat-analisis', icon: History,     label: 'Riwayat Analisis' },
-  { to: '/profil',     icon: User,            label: 'Profil' },
+  { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/registrasi-mk',  icon: ClipboardList,   label: 'Registrasi MK' },
+  { to: '/input-nilai',    icon: BookOpen,        label: 'Lihat Nilai' },
+  { to: '/hasil-analisis', icon: BarChart3,        label: 'Hasil Analisis' },
+  { to: '/riwayat-analisis', icon: History,       label: 'Riwayat Analisis' },
+  { to: '/profil',         icon: User,            label: 'Profil' },
 ];
 
 const dosenNav = [

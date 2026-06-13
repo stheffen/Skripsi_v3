@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, TrendingDown, BookX, BookOpen, GraduationCap, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 function RiskBadge({ kategori }: { kategori: string }) {
   const map: Record<string, any> = {
@@ -21,7 +22,6 @@ function RiskBadge({ kategori }: { kategori: string }) {
 
 export default function DosenMahasiswaClient({ mahasiswaList }: { mahasiswaList: any[] }) {
   const [search, setSearch] = useState('');
-  const [expanded, setExpanded] = useState<number | null>(null);
 
   const filtered = mahasiswaList.filter(m => 
     m.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -58,8 +58,8 @@ export default function DosenMahasiswaClient({ mahasiswaList }: { mahasiswaList:
               m.risiko === 'Sedang' ? 'border-amber-500/30' :
               m.risiko === 'Rendah' ? 'border-emerald-500/30' : 'border-slate-800'
             }`}>
-              <button
-                onClick={() => setExpanded(expanded === m.id ? null : m.id)}
+              <Link
+                href={`/dosen/mahasiswa/${m.id}`}
                 className="w-full flex flex-col sm:flex-row sm:items-center gap-4 p-5 hover:bg-slate-800/30 transition text-left"
               >
                 <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
@@ -81,48 +81,22 @@ export default function DosenMahasiswaClient({ mahasiswaList }: { mahasiswaList:
                   
                   <div className="hidden md:flex items-center gap-6 text-center">
                     <div>
-                      <p className="text-sm font-bold text-slate-200">{m.ips?.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-slate-200">{m.ips?.toFixed(2) || "-"}</p>
                       <p className="text-xs text-slate-500 mt-0.5">IPS</p>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-200">{m.ipk?.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-slate-200">{m.ipk?.toFixed(2) || "-"}</p>
                       <p className="text-xs text-slate-500 mt-0.5">IPK</p>
                     </div>
                     <div className="w-12">
-                      <p className={`text-sm font-bold ${m.mk_bermasalah > 0 ? 'text-red-400' : 'text-slate-200'}`}>{m.mk_bermasalah}</p>
+                      <p className={`text-sm font-bold ${m.mk_bermasalah > 0 ? 'text-red-400' : 'text-slate-200'}`}>{m.mk_bermasalah || 0}</p>
                       <p className="text-xs text-slate-500 mt-0.5">MK D/E</p>
                     </div>
                   </div>
 
-                  {expanded === m.id
-                    ? <ChevronDown size={20} className="text-slate-400 flex-shrink-0" />
-                    : <ChevronRight size={20} className="text-slate-400 flex-shrink-0" />
-                  }
+                  <ChevronRight size={20} className="text-slate-400 flex-shrink-0" />
                 </div>
-              </button>
-
-              {expanded === m.id && (
-                <div className="border-t border-slate-800 p-5 bg-slate-900/50">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 md:hidden">
-                     {/* Tampilkan stats untuk mobile karena di hidden di header */}
-                     <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-800/80">
-                        <p className="text-lg font-bold text-slate-200">{m.ips?.toFixed(2)}</p>
-                        <p className="text-xs text-slate-500 mt-1">IPS Terakhir</p>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-800/80">
-                        <p className="text-lg font-bold text-slate-200">{m.ipk?.toFixed(2)}</p>
-                        <p className="text-xs text-slate-500 mt-1">IPK Kumulatif</p>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-800/80">
-                        <p className={`text-lg font-bold ${m.mk_bermasalah > 0 ? 'text-red-400' : 'text-slate-200'}`}>{m.mk_bermasalah}</p>
-                        <p className="text-xs text-slate-500 mt-1">MK Bermasalah</p>
-                      </div>
-                  </div>
-                  <div className="text-center p-6 bg-slate-800/30 rounded-xl border border-slate-800">
-                    <p className="text-slate-300 text-sm">Fitur Detail Mahasiswa untuk Dosen belum diimplementasi di prototype ini.</p>
-                  </div>
-                </div>
-              )}
+              </Link>
             </div>
           ))
         )}
