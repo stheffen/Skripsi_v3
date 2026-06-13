@@ -64,20 +64,27 @@ export default function Login() {
         {/* Abstract Background Elements */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-        
+
         <div className="p-12 flex-1 flex flex-col justify-center relative z-10">
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-blue-500/20">
             <AlertTriangle size={32} className="text-white" />
           </div>
-          
+
           <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
-            Akademik<span className="text-blue-600 dark:text-blue-500">Pro</span>
+            Stheffen
+            <span className="text-blue-600 dark:text-blue-500">App</span>
             <br />
-            <span className="text-2xl text-slate-500 dark:text-slate-400 font-medium">Early Warning System</span>
+            <span className="text-2xl text-slate-500 dark:text-slate-400 font-medium">
+              Early Warning System
+            </span>
           </h1>
-          
+
           <p className="text-slate-600 dark:text-slate-400 text-lg mb-12 leading-relaxed max-w-md">
-            Deteksi dini profil risiko akademik mahasiswa menggunakan ketepatan <strong className="text-slate-900 dark:text-white font-semibold">Logika Fuzzy Mamdani</strong>.
+            Deteksi dini profil risiko akademik mahasiswa menggunakan ketepatan{" "}
+            <strong className="text-slate-900 dark:text-white font-semibold">
+              Logika Fuzzy Mamdani
+            </strong>
+            .
           </p>
 
           <div className="space-y-4">
@@ -86,8 +93,12 @@ export default function Login() {
                 <span className="text-lg font-bold text-blue-600">52</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Mata Kuliah</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Terintegrasi dalam sistem</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  Mata Kuliah
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Terintegrasi dalam sistem
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 backdrop-blur-sm">
@@ -95,8 +106,12 @@ export default function Login() {
                 <span className="text-lg font-bold text-blue-600">27</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Fuzzy Rules</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Parameter defuzzifikasi akurat</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  Fuzzy Rules
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Parameter defuzzifikasi akurat
+                </p>
               </div>
             </div>
           </div>
@@ -107,15 +122,16 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-6 relative">
         {/* Glow behind form in dark mode */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl hidden dark:block" />
-        
+
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
-          
           <div className="flex items-center gap-3 mb-10 lg:hidden">
             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
               <AlertTriangle size={24} className="text-white" />
             </div>
             <div>
-              <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Akademik<span className="text-blue-600">Pro</span></p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Akademik<span className="text-blue-600">Pro</span>
+              </p>
             </div>
           </div>
 
@@ -138,7 +154,10 @@ export default function Login() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                <Label
+                  htmlFor="email"
+                  className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider"
+                >
                   Alamat Email
                 </Label>
                 <Input
@@ -157,7 +176,10 @@ export default function Login() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                  <Label
+                    htmlFor="password"
+                    className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider"
+                  >
                     Kata Sandi
                   </Label>
                 </div>
@@ -194,7 +216,10 @@ export default function Login() {
                 ) : (
                   <>
                     Masuk ke Sistem
-                    <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight
+                      size={18}
+                      className="ml-2 group-hover:translate-x-1 transition-transform"
+                    />
                   </>
                 )}
               </Button>
@@ -207,19 +232,32 @@ export default function Login() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                   <p className="text-xs text-slate-500 mb-1">Mahasiswa</p>
-                  <p className="font-medium text-slate-900 dark:text-white truncate" title="demo@gmail.com">demo@gmail.com</p>
+                  <p
+                    className="font-medium text-slate-900 dark:text-white truncate"
+                    title="demo@gmail.com"
+                  >
+                    demo@gmail.com
+                  </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                   <p className="text-xs text-slate-500 mb-1">Dosen Wali</p>
-                  <p className="font-medium text-slate-900 dark:text-white truncate" title="demodosen@gmail.com">demodosen@gmail.</p>
+                  <p
+                    className="font-medium text-slate-900 dark:text-white truncate"
+                    title="demodosen@gmail.com"
+                  >
+                    demodosen@gmail.
+                  </p>
                 </div>
               </div>
               <p className="text-center text-xs text-slate-500 mt-3">
-                Sandi umum: <strong className="text-slate-700 dark:text-slate-300">demo1234</strong>
+                Sandi umum:{" "}
+                <strong className="text-slate-700 dark:text-slate-300">
+                  demo1234
+                </strong>
               </p>
             </div>
           </div>
-          
+
           <p className="text-center text-sm text-slate-500 mt-8">
             Belum terdaftar dalam sistem?{" "}
             <Link

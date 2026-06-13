@@ -1,40 +1,56 @@
 "use client";
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
-  LayoutDashboard, BookOpen, BarChart3, History,
-  FlaskConical, User, LogOut, GraduationCap, Users, X, AlertTriangle, ClipboardList
-} from 'lucide-react';
-import { useState } from 'react';
+  LayoutDashboard,
+  BookOpen,
+  BarChart3,
+  History,
+  FlaskConical,
+  User,
+  LogOut,
+  GraduationCap,
+  Users,
+  X,
+  AlertTriangle,
+  ClipboardList,
+} from "lucide-react";
+import { useState } from "react";
 
 const mahasiswaNav = [
-  { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/registrasi-mk',  icon: ClipboardList,   label: 'Registrasi MK' },
-  { to: '/input-nilai',    icon: BookOpen,        label: 'Lihat Nilai' },
-  { to: '/hasil-analisis', icon: BarChart3,        label: 'Hasil Analisis' },
-  { to: '/riwayat-analisis', icon: History,       label: 'Riwayat Analisis' },
-  { to: '/profil',         icon: User,            label: 'Profil' },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/registrasi-mk", icon: ClipboardList, label: "Registrasi MK" },
+  { to: "/input-nilai", icon: BookOpen, label: "Lihat Nilai" },
+  { to: "/hasil-analisis", icon: BarChart3, label: "Hasil Analisis" },
+  { to: "/riwayat-analisis", icon: History, label: "Riwayat Analisis" },
+  { to: "/profil", icon: User, label: "Profil" },
 ];
 
 const dosenNav = [
-  { to: '/dosen/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/dosen/mahasiswa', icon: Users,           label: 'Mahasiswa' },
-  { to: '/dosen/profil',    icon: User,            label: 'Profil' },
+  { to: "/dosen/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/dosen/mahasiswa", icon: Users, label: "Mahasiswa" },
+  { to: "/dosen/profil", icon: User, label: "Profil" },
 ];
 
-export default function Sidebar({ open, onClose }: { open: boolean, onClose: () => void }) {
+export default function Sidebar({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const { data: session } = useSession();
   const user = session?.user;
   const pathname = usePathname();
   const router = useRouter();
 
-  const navItems = user?.role === 'dosen' ? dosenNav : mahasiswaNav;
+  const navItems = user?.role === "dosen" ? dosenNav : mahasiswaNav;
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
@@ -47,18 +63,25 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
         />
       )}
 
-      <aside className={`
+      <aside
+        className={`
         fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800
         transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
-        ${open ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+        ${open ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
         {/* Logo */}
         <div className="h-14 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-blue-500/20">
             <GraduationCap className="text-white" size={20} />
           </div>
-          <span className="text-slate-900 dark:text-white font-bold text-lg tracking-tight">Akademik<span className="text-blue-500">Pro</span></span>
-          <button onClick={onClose} className="ml-auto lg:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+          <span className="text-slate-900 dark:text-white font-bold text-lg tracking-tight">
+            Stheffen<span className="text-blue-500">App</span>
+          </span>
+          <button
+            onClick={onClose}
+            className="ml-auto lg:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
             <X size={20} />
           </button>
         </div>
@@ -67,19 +90,25 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {user?.name?.charAt(0)?.toUpperCase() || '?'}
+              {user?.name?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Loading...'}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                {user?.name || "Loading..."}
+              </p>
               <p className="text-xs text-slate-500 truncate">
-                {user?.role === 'dosen' ? 'Dosen Pembimbing' : `NIM: ${user?.nim || '-'}`}
+                {user?.role === "dosen"
+                  ? "Dosen Pembimbing"
+                  : `NIM: ${user?.nim || "-"}`}
               </p>
             </div>
           </div>
-          {user?.role === 'mahasiswa' && (
+          {user?.role === "mahasiswa" && (
             <div className="mt-2 flex items-center gap-1.5">
               <GraduationCap size={12} className="text-blue-400" />
-              <span className="text-xs text-slate-500 dark:text-slate-400">Semester {user?.semester_aktif || '-'}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Semester {user?.semester_aktif || "-"}
+              </span>
             </div>
           )}
         </div>
@@ -95,9 +124,10 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
                 onClick={onClose}
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
-                  ${isActive
-                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200'
+                  ${
+                    isActive
+                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200"
                   }
                 `}
               >
@@ -114,7 +144,10 @@ export default function Sidebar({ open, onClose }: { open: boolean, onClose: () 
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors group"
           >
-            <LogOut size={18} className="text-red-500/70 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
+            <LogOut
+              size={18}
+              className="text-red-500/70 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
+            />
             Keluar
           </button>
         </div>
