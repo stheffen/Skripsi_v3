@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import DetailMahasiswaClient from "./DetailMahasiswaClient";
 
-export default async function DetailMahasiswaPage({ params }: { params: { id: string } }) {
+export default async function DetailMahasiswaPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "dosen") redirect("/login");
 
-  const mahasiswaId = parseInt(params.id);
+  const resolvedParams = await params;
+  const mahasiswaId = parseInt(resolvedParams.id);
 
   // Ambil data mahasiswa
   const mahasiswa = await prisma.user.findUnique({
