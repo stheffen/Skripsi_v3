@@ -99,31 +99,22 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
 
   const handleSave = () => {
     // Gabungkan currentKRS yang nilainya berubah + draftMKs
-    const entries: { mkId: number; nilai: string; semester: number }[] = [];
+    const entries: { mkId: number; nilai: string | null; semester: number }[] = [];
     
     // Drafts
     draftMKs.forEach(mk => {
-      if (nilaiMap[mk.id]) {
-        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id]!, semester: activeSem });
-      }
+      entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
     });
 
     // Current (Updates)
     currentKRS.forEach(mk => {
-      if (nilaiMap[mk.id] && nilaiMap[mk.id] !== mk.nilai) {
-        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id]!, semester: activeSem });
+      if ((nilaiMap[mk.id] ?? null) !== (mk.nilai ?? null)) {
+        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
       }
     });
 
     if (entries.length === 0) {
       setError("Tidak ada perubahan nilai atau penambahan MK baru untuk disimpan.");
-      return;
-    }
-
-    // Pastikan semua draft punya nilai sebelum disave
-    const draftWithoutNilai = draftMKs.filter(mk => !nilaiMap[mk.id]);
-    if (draftWithoutNilai.length > 0) {
-      setError("Mohon lengkapi nilai untuk semua MK yang baru ditambahkan.");
       return;
     }
 
