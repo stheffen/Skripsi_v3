@@ -90,7 +90,8 @@ export async function registrasiMK(
         mata_kuliah_id: mkId,
         nilai: nilai || null,
         bobot_nilai: nilai ? getBobot(nilai) : null,
-        semester_input: semesterInput,
+        semester_input: semesterInput, // Asal semester dicatat
+        semester_override: semesterInput, // Semester tempat MK dimasukkan di KRS
       },
     });
 
@@ -119,7 +120,7 @@ export async function registrasiMK(
  */
 export async function batchRegistrasiMK(
   userId: number,
-  entries: { mkId: number; nilai: string; semester: number }[]
+  entries: { mkId: number; nilai: string | null; semester: number }[]
 ) {
   try {
     for (const e of entries) {
@@ -128,5 +129,20 @@ export async function batchRegistrasiMK(
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Gagal menyimpan registrasi" };
+  }
+}
+
+/**
+ * Hapus MK dari KRS (Hapus dari KHS)
+ */
+export async function deleteRegistrasiMK(userId: number, mkId: number) {
+  try {
+    await prisma.khs.delete({
+      where: { user_id_mata_kuliah_id: { user_id: userId, mata_kuliah_id: mkId } },
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error(error);
+    return { error: error.message || "Gagal menghapus mata kuliah" };
   }
 }

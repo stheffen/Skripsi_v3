@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ClipboardList, CheckCircle, ChevronDown, ChevronUp, Save, AlertTriangle, BookOpen } from "lucide-react";
-import { batchRegistrasiMK } from "@/app/actions/registrasi";
+import { ClipboardList, CheckCircle, ChevronDown, ChevronUp, Save, AlertTriangle, BookOpen, Plus, Trash2, X } from "lucide-react";
+import { batchRegistrasiMK, deleteRegistrasiMK } from "@/app/actions/registrasi";
 import { useRouter } from "next/navigation";
 
 const NILAI_OPTIONS = ["A", "B", "C", "D", "E"];
@@ -38,75 +38,143 @@ function NilaiSelector({ mkId, currentNilai, onChange }: any) {
 export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any; mkPerSemester: Record<number, any[]> }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [activeSem, setActiveSem] = useState(1);
-  const [selectedMK, setSelectedMK] = useState<Record<number, boolean>>({});
-  const [nilaiMap, setNilaiMap] = useState<Record<number, string | null>>({});
+  
+  // Semua MK diflatten untuk mempermudah Modal
+  const allMKs = Object.values(mkPerSemester).flat();
+  const semesterList = [1, 2, 3, 4, 5, 6, 7, 8]; // Fixed 8 semester untuk UI KRS
+
+  const [activeSem, setActiveSem] = useState(user.semester_aktif || 1);
+  
+  // MK yang sudah terdaftar di semester aktif
+  const currentKRS = (mkPerSemester[activeSem] || []).filter((mk: any) => mk.sudah_registrasi);
+  
+  // State untuk MK yang ditambahkan dari Modal (Draft)
+  const [draftMKs, setDraftMKs] = useState<any[]>([]);
+  
+  // State nilai (menggabungkan yang sudah ada dan yang baru diubah)
+  const [nilaiMap, setNilaiMap] = useState<Record<number, string | null>>(() => {
+    const initial: Record<number, string | null> = {};
+    allMKs.forEach(mk => {
+      if (mk.sudah_registrasi) initial[mk.id] = mk.nilai;
+    });
+    return initial;
+  });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalSearch, setModalSearch] = useState("");
+  const [selectedInModal, setSelectedInModal] = useState<Record<number, boolean>>({});
+  
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-
-  const semesterList = Object.keys(mkPerSemester)
-    .map(Number)
-    .sort((a, b) => a - b);
-
-  const currentMKList = mkPerSemester[activeSem] || [];
-
-  const handleSelectMK = (mkId: number, checked: boolean) => {
-    setSelectedMK((prev) => ({ ...prev, [mkId]: checked }));
-    if (!checked) {
-      setNilaiMap((prev) => { const n = { ...prev }; delete n[mkId]; return n; });
-    }
-  };
 
   const handleNilai = (mkId: number, nilai: string | null) => {
     setNilaiMap((prev) => ({ ...prev, [mkId]: nilai }));
   };
 
-  const handleSave = () => {
-    const toSave = currentMKList
-      .filter((mk: any) => selectedMK[mk.id] && nilaiMap[mk.id])
-      .map((mk: any) => ({ mkId: mk.id, nilai: nilaiMap[mk.id]!, semester: activeSem }));
+  const handleOpenModal = () => {
+    setSelectedInModal({});
+    setModalSearch("");
+    setIsModalOpen(true);
+  };
 
-    if (toSave.length === 0) {
-      setError("Pilih mata kuliah dan input nilainya terlebih dahulu.");
+  const handleAddFromModal = () => {
+    const toAdd = allMKs.filter(mk => selectedInModal[mk.id] && !mk.sudah_registrasi && !draftMKs.find(d => d.id === mk.id));
+    setDraftMKs([...draftMKs, ...toAdd]);
+    setIsModalOpen(false);
+  };
+
+  const handleRemoveDraft = (mkId: number) => {
+    setDraftMKs(draftMKs.filter(mk => mk.id !== mkId));
+    setNilaiMap(prev => { const n = {...prev}; delete n[mkId]; return n; });
+  };
+
+  const handleDeleteKRS = (mkId: number) => {
+    if (!confirm("Yakin ingin menghapus mata kuliah ini dari KRS?")) return;
+    startTransition(async () => {
+      const res = await deleteRegistrasiMK(parseInt(user.id), mkId);
+      if (res.error) setError(res.error);
+      else router.refresh();
+    });
+  };
+
+  const handleSave = () => {
+    // Gabungkan currentKRS yang nilainya berubah + draftMKs
+    const entries: { mkId: number; nilai: string; semester: number }[] = [];
+    
+    // Drafts
+    draftMKs.forEach(mk => {
+      if (nilaiMap[mk.id]) {
+        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id]!, semester: activeSem });
+      }
+    });
+
+    // Current (Updates)
+    currentKRS.forEach(mk => {
+      if (nilaiMap[mk.id] && nilaiMap[mk.id] !== mk.nilai) {
+        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id]!, semester: activeSem });
+      }
+    });
+
+    if (entries.length === 0) {
+      setError("Tidak ada perubahan nilai atau penambahan MK baru untuk disimpan.");
+      return;
+    }
+
+    // Pastikan semua draft punya nilai sebelum disave
+    const draftWithoutNilai = draftMKs.filter(mk => !nilaiMap[mk.id]);
+    if (draftWithoutNilai.length > 0) {
+      setError("Mohon lengkapi nilai untuk semua MK yang baru ditambahkan.");
       return;
     }
 
     setError("");
     startTransition(async () => {
-      const res = await batchRegistrasiMK(parseInt(user.id), toSave);
+      const res = await batchRegistrasiMK(parseInt(user.id), entries);
       if (res.error) {
         setError(res.error);
       } else {
         setSaved(true);
         setTimeout(() => {
-          router.refresh();
           setSaved(false);
-          setSelectedMK({});
-          setNilaiMap({});
+          setDraftMKs([]);
+          router.refresh();
         }, 1500);
       }
     });
   };
 
-  const selectedCount = Object.values(selectedMK).filter(Boolean).length;
-  const filledNilaiCount = Object.entries(nilaiMap).filter(([mkId, v]) => v && selectedMK[Number(mkId)]).length;
+  const combinedList = [...currentKRS, ...draftMKs];
+  
+  // MK yang bisa dipilih di modal = Belum registrasi dan belum ada di draft
+  const availableMKs = allMKs.filter(mk => !mk.sudah_registrasi && !draftMKs.find(d => d.id === mk.id));
+  const filteredModalMKs = availableMKs.filter(mk => 
+    mk.nama.toLowerCase().includes(modalSearch.toLowerCase()) || 
+    mk.kode.toLowerCase().includes(modalSearch.toLowerCase())
+  );
+
+  // Group modal MKs by their original semester
+  const groupedModalMKs: Record<number, any[]> = {};
+  filteredModalMKs.forEach(mk => {
+    if (!groupedModalMKs[mk.semester]) groupedModalMKs[mk.semester] = [];
+    groupedModalMKs[mk.semester].push(mk);
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Registrasi Mata Kuliah</h1>
-        <p className="text-slate-400 text-sm mt-1">Pilih mata kuliah yang Anda ambil di semester ini dan input nilainya</p>
+        <h1 className="text-2xl font-bold text-slate-100">Registrasi KRS</h1>
+        <p className="text-slate-400 text-sm mt-1">Kelola mata kuliah dan nilai untuk setiap semester</p>
       </div>
 
       {/* Semester Tabs */}
       <div className="flex gap-2 flex-wrap bg-slate-900 p-2 rounded-2xl border border-slate-800">
         {semesterList.map((s) => {
           const mks = mkPerSemester[s] || [];
-          const regCount = mks.filter((m: any) => m.sudah_registrasi && m.nilai).length;
+          const regCount = mks.filter((m: any) => m.sudah_registrasi).length;
           return (
             <button
               key={s}
-              onClick={() => { setActiveSem(s); setSelectedMK({}); setNilaiMap({}); }}
+              onClick={() => { setActiveSem(s); setDraftMKs([]); setError(""); }}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex-1 min-w-[70px] relative ${
                 activeSem === s
                   ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
@@ -122,15 +190,6 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
         })}
       </div>
 
-      {/* Info Panel */}
-      <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-        <BookOpen size={16} className="text-blue-400 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-300">
-          <strong>Cara registrasi:</strong> Centang MK yang Anda ambil, lalu pilih nilai. Klik "Simpan" untuk menyimpan.
-          Untuk angkatan 2026 ke atas, pastikan tidak ada nilai D karena akan meningkatkan risiko akademik.
-        </div>
-      </div>
-
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-sm flex items-center gap-3">
           <AlertTriangle size={18} /> {error}
@@ -139,77 +198,64 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
 
       {saved && (
         <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 text-sm flex items-center gap-3">
-          <CheckCircle size={18} /> Registrasi berhasil disimpan!
+          <CheckCircle size={18} /> Perubahan berhasil disimpan!
         </div>
       )}
 
-      {/* MK List */}
+      {/* Main KRS Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="flex items-center gap-3 p-4 border-b border-slate-800 bg-slate-800/30">
-          <ClipboardList size={18} className="text-blue-400" />
-          <h3 className="font-semibold text-slate-200">Mata Kuliah Semester {activeSem}</h3>
-          <span className="ml-auto text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">
-            {currentMKList.length} MK
-          </span>
+        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/30">
+          <div className="flex items-center gap-3">
+            <ClipboardList size={18} className="text-blue-400" />
+            <h3 className="font-semibold text-slate-200">KRS Semester {activeSem}</h3>
+            <span className="text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">
+              {combinedList.length} MK
+            </span>
+          </div>
+          <button
+            onClick={handleOpenModal}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-lg shadow-blue-500/20"
+          >
+            <Plus size={16} /> Tambah MK
+          </button>
         </div>
 
         <div className="divide-y divide-slate-800">
-          {currentMKList.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-sm">Tidak ada mata kuliah di semester ini.</div>
+          {combinedList.length === 0 ? (
+            <div className="p-12 text-center flex flex-col items-center">
+              <BookOpen size={48} className="text-slate-700 mb-4" />
+              <p className="text-slate-300 font-medium mb-1">Belum ada mata kuliah</p>
+              <p className="text-slate-500 text-sm">Klik tombol "Tambah MK" untuk memasukkan mata kuliah ke KRS semester ini.</p>
+            </div>
           ) : (
-            currentMKList.map((mk: any) => {
-              const isSelected = !!selectedMK[mk.id];
-              const isAlreadyRegistered = mk.sudah_registrasi && mk.nilai;
+            combinedList.map((mk: any) => {
+              const isDraft = draftMKs.some(d => d.id === mk.id);
               return (
-                <div
-                  key={mk.id}
-                  className={`flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 transition ${
-                    isSelected ? "bg-blue-500/5" : isAlreadyRegistered ? "bg-emerald-500/5" : "hover:bg-slate-800/30"
-                  }`}
-                >
-                  {/* Checkbox */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    {isAlreadyRegistered ? (
-                      <div className="w-5 h-5 rounded bg-emerald-500/30 border border-emerald-500/50 flex items-center justify-center">
-                        <CheckCircle size={12} className="text-emerald-400" />
-                      </div>
-                    ) : (
-                      <input
-                        type="checkbox"
-                        id={`mk-${mk.id}`}
-                        checked={isSelected}
-                        onChange={(e) => handleSelectMK(mk.id, e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 accent-blue-500 cursor-pointer"
-                      />
-                    )}
-                  </div>
-
-                  {/* MK Info */}
+                <div key={mk.id} className={`flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 transition ${isDraft ? "bg-blue-500/5 border-l-2 border-blue-500" : "hover:bg-slate-800/30"}`}>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
+                      {isDraft && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Baru</span>}
+                    </div>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-slate-500">{mk.kode}</span>
                       <span className="text-slate-700">&bull;</span>
                       <span className="text-xs text-slate-500">{mk.sks} SKS</span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded ${mk.jenis === "Wajib" ? "bg-slate-700/50 text-slate-400" : "bg-amber-500/20 text-amber-300"}`}>
-                        {mk.jenis}
-                      </span>
-                      {isAlreadyRegistered && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${NILAI_COLORS[mk.nilai]}`}>
-                          Nilai: {mk.nilai}
-                        </span>
-                      )}
+                      <span className="text-slate-700">&bull;</span>
+                      <span className="text-xs text-slate-500">Bawaan Sem {mk.semester}</span>
                     </div>
                   </div>
 
-                  <div className="self-end sm:self-auto mt-2 sm:mt-0 flex items-center">
-                    {isAlreadyRegistered ? (
-                      <span className="text-xs text-emerald-400 font-medium flex items-center gap-1"><CheckCircle size={12} /> Sudah diregistrasi</span>
-                    ) : isSelected ? (
-                      <NilaiSelector mkId={mk.id} currentNilai={nilaiMap[mk.id] ?? null} onChange={handleNilai} />
-                    ) : (
-                      <span className="text-xs text-slate-600">- Pilih MK terlebih dahulu</span>
-                    )}
+                  <div className="flex items-center gap-4 self-end sm:self-auto mt-2 sm:mt-0">
+                    <NilaiSelector mkId={mk.id} currentNilai={nilaiMap[mk.id] ?? null} onChange={handleNilai} />
+                    
+                    <button
+                      onClick={() => isDraft ? handleRemoveDraft(mk.id) : handleDeleteKRS(mk.id)}
+                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition"
+                      title={isDraft ? "Batal Tambah" : "Hapus dari KRS"}
+                    >
+                      {isDraft ? <X size={18} /> : <Trash2 size={18} />}
+                    </button>
                   </div>
                 </div>
               );
@@ -219,20 +265,91 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
       </div>
 
       {/* Save Button */}
-      {selectedCount > 0 && (
-        <div className="sticky bottom-4 flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur border border-slate-700 rounded-2xl shadow-xl">
-          <div>
-            <p className="text-sm font-semibold text-slate-200">{selectedCount} MK dipilih, {filledNilaiCount} sudah ber-nilai</p>
-            <p className="text-xs text-slate-500">Pastikan semua MK yang dipilih sudah memiliki nilai sebelum menyimpan</p>
-          </div>
+      {combinedList.length > 0 && (
+        <div className="flex justify-end">
           <button
             onClick={handleSave}
-            disabled={isPending || filledNilaiCount === 0}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
+            disabled={isPending}
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition disabled:opacity-40 shadow-lg shadow-emerald-500/20"
           >
-            {isPending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={16} />}
-            Simpan Registrasi
+            {isPending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={18} />}
+            Simpan Perubahan KRS
           </button>
+        </div>
+      )}
+
+      {/* Modal Window Box */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-800/50">
+              <h2 className="text-lg font-bold text-slate-100">Tambah Mata Kuliah</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white transition">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-4 border-b border-slate-800">
+              <input
+                type="text"
+                placeholder="Cari nama atau kode mata kuliah..."
+                value={modalSearch}
+                onChange={(e) => setModalSearch(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {Object.keys(groupedModalMKs).length === 0 ? (
+                <div className="text-center py-12 text-slate-500">Tidak ada mata kuliah yang tersedia.</div>
+              ) : (
+                Object.keys(groupedModalMKs).map(Number).sort((a, b) => a - b).map(sem => (
+                  <div key={sem} className="space-y-2">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1">Semester {sem}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {groupedModalMKs[sem].map((mk: any) => {
+                        const isSelected = !!selectedInModal[mk.id];
+                        return (
+                          <label key={mk.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-blue-500/10 border-blue-500/30' : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600'}`}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => setSelectedInModal(prev => ({...prev, [mk.id]: e.target.checked}))}
+                              className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-800 accent-blue-500"
+                            />
+                            <div>
+                              <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
+                              <div className="flex gap-2 text-xs text-slate-500 mt-1">
+                                <span>{mk.kode}</span>
+                                <span>&bull;</span>
+                                <span>{mk.sks} SKS</span>
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end gap-3">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleAddFromModal}
+                disabled={Object.values(selectedInModal).filter(Boolean).length === 0}
+                className="px-6 py-2 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition disabled:opacity-50"
+              >
+                Tambahkan ({Object.values(selectedInModal).filter(Boolean).length}) MK
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import HasilAnalisisClient from "./HasilAnalisisClient";
 import prisma from "@/lib/prisma";
+import { AkademikService } from "@/services/akademikService";
 
 export default async function HasilAnalisisPage() {
   const session = await getServerSession(authOptions);
@@ -70,9 +71,14 @@ export default async function HasilAnalisisPage() {
       if (latest.detail_fuzzy) {
         const parsed = JSON.parse(latest.detail_fuzzy);
         initialData = { ...initialData, ...parsed };
-        initialData.mk_bermasalah_detail = parsed.input?.mkDetail || [];
+        initialData.mk_bermasalah_detail = parsed.input?.mkDetail;
       }
     } catch (e) {}
+    
+    // Fallback: Jika data analisis lama tidak menyimpan mkDetail, hitung manual saat ini
+    if (!initialData.mk_bermasalah_detail || initialData.mk_bermasalah_detail.length === 0) {
+      initialData.mk_bermasalah_detail = await AkademikService.getMKBermasalahDetail(parseInt(user.id));
+    }
   }
 
   return (
