@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import HasilAnalisisClient from "./HasilAnalisisClient";
 import prisma from "@/lib/prisma";
 import { AkademikService } from "@/services/akademikService";
+import { hitungSemesterAktif } from "@/lib/utils";
 
 export default async function HasilAnalisisPage() {
   const session = await getServerSession(authOptions);
@@ -16,19 +17,7 @@ export default async function HasilAnalisisPage() {
     select: { angkatan: true },
   });
 
-  // Hitung maxSemester berdasarkan angkatan dan tahun sekarang
-  const now = new Date();
-  const tahunSekarang = now.getFullYear();
-  const bulan = now.getMonth() + 1; // 1-12
-
-  let maxSemester = 1;
-  if (dbUser?.angkatan) {
-    const tahunAngkatan = parseInt(dbUser.angkatan);
-    const selisihTahun = tahunSekarang - tahunAngkatan;
-    // Setiap tahun = 2 semester; bulan >= 8 = semester ganjil, bulan < 8 = semester genap
-    const semesterBerjalan = bulan >= 8 ? 1 : 2;
-    maxSemester = Math.max(1, Math.min(14, selisihTahun * 2 + semesterBerjalan));
-  }
+  const maxSemester = hitungSemesterAktif(dbUser?.angkatan);
 
   // Ambil analisis terbaru
   const latest = await prisma.analisisRisiko.findFirst({

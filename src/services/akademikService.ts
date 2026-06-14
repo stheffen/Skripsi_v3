@@ -79,14 +79,6 @@ export class AkademikService {
   }
 
   static async hitungMKBermasalah(userId: number): Promise<number> {
-    const detail = await this.getMKBermasalahDetail(userId);
-    return detail.length;
-  }
-
-  /**
-   * Kembalikan detail MK bermasalah (D/E)
-   */
-  static async getMKBermasalahDetail(userId: number) {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
     
@@ -101,7 +93,7 @@ export class AkademikService {
     });
 
     let dCountReguler = 0;
-    const bermasalahList: any[] = [];
+    let bermasalahCount = 0;
 
     // Sort KHS so that 'E' and Starred Courses are prioritized
     khsList.sort((a: any, b: any) => {
@@ -119,30 +111,53 @@ export class AkademikService {
         isBermasalah = true;
       } else if (khs.nilai === 'D') {
         if (isBintang) {
-          isBermasalah = true; // Bintang D mutlak bermasalah
+          isBermasalah = true;
         } else if (angkatan >= 2026) {
-          isBermasalah = true; // >= 2026 D mutlak bermasalah
+          isBermasalah = true;
         } else {
-          // < 2026, boleh 2 D reguler
           if (dCountReguler < 2) {
             dCountReguler++;
             isBermasalah = false; 
           } else {
-            isBermasalah = true; // Kuota 2 D habis
+            isBermasalah = true;
           }
         }
       }
 
       if (isBermasalah) {
-        bermasalahList.push({
-          kode: mk.kode,
-          nama: mk.nama,
-          sks: mk.sks,
-          nilai: khs.nilai!,
-          semester: khs.semester_override ?? mk.semester,
-          jenis: mk.jenis,
-        });
+        bermasalahCount++;
       }
+    }
+
+    return bermasalahCount;
+  }
+
+  /**
+   * Kembalikan SELURUH detail MK bermasalah (D/E) untuk UI (tanpa memotong kuota)
+   */
+  static async getMKBermasalahDetail(userId: number) {
+    const khsList = await prisma.khs.findMany({
+      where: {
+        user_id: userId,
+        nilai: { in: ['D', 'E'] },
+      },
+      include: {
+        mata_kuliah: true,
+      },
+    });
+
+    const bermasalahList: any[] = [];
+
+    for (const khs of khsList) {
+      const mk = khs.mata_kuliah;
+      bermasalahList.push({
+        kode: mk.kode,
+        nama: mk.nama,
+        sks: mk.sks,
+        nilai: khs.nilai!,
+        semester: khs.semester_override ?? mk.semester,
+        jenis: mk.jenis,
+      });
     }
 
     const result = bermasalahList;
