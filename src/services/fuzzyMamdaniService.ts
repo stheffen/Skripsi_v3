@@ -135,22 +135,27 @@ export function inferensiBaru(
   // Hitung Penalti Beban Studi
   let penalty = 0;
   
-  // Penalty 1: Mendekati/Melewati standar lulus (Semester 7+)
-  if (semesterAktif >= 8) penalty += 1.5;
-  else if (semesterAktif === 7) penalty += 1.0;
-  else if (semesterAktif === 6) penalty += 0.5;
+  // Penalty 1: Melewati masa studi normal (Semester 9+) pasti penalti berat
+  if (semesterAktif > 8) penalty += 1.5;
 
-  // Penalty 2: Masih ada / banyak MK Bermasalah (D/E)
+  // Penalty 2: Sisa SKS vs Waktu Ideal (Asumsi maksimal ambil 24 SKS per semester)
+  // Berapa maksimal SKS yang logis bisa diselesaikan hingga semester 8?
+  const sisaSemesterKe8 = Math.max(0, 9 - semesterAktif);
+  const maxSksBisaDitempuhLulusNormal = sisaSemesterKe8 * 24; 
+  
+  // Jika sisa SKS > dari yang bisa ditempuh sampai sem 8, PASTI molor
+  if (sisaSks > maxSksBisaDitempuhLulusNormal) {
+    penalty += 1.5; 
+  } else if (sisaSks > maxSksBisaDitempuhLulusNormal - 10 && semesterAktif >= 6) {
+    // Sangat mepet (misal di sem 7 sisa 40 SKS, batas 48, maka sisaSks > 38)
+    penalty += 0.5;
+  }
+
+  // Penalty 3: Masih ada / banyak MK Bermasalah (D/E)
   if (mkBermasalah >= 3) penalty += 1.0;
   else if (mkBermasalah > 0) penalty += 0.5;
 
-  // Penalty 3: Sisa SKS masih banyak di semester atas
-  // Asumsi ideal: sisa = (8 - semesterAktif) * 18 SKS. Jika tertinggal jauh, penalti!
-  const idealSisa = Math.max(0, (8 - semesterAktif) * 18);
-  if (sisaSks > idealSisa + 18) penalty += 1.0; // Tertinggal lebih dari 1 semester
-  else if (sisaSks > idealSisa + 9) penalty += 0.5;
-
-  // Penalty 4: IPS Jelek di saat genting
+  // Penalty 4: IPS Jelek di saat genting (Mulai Semester 6 ke atas)
   if (semesterAktif >= 6 && muIPS.rendah > 0.4) penalty += 0.5;
 
   const eskalasi = (out: string): string => {

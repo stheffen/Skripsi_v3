@@ -42,18 +42,18 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   // Semua MK diflatten untuk mempermudah Modal
   const allMKs = Object.values(mkPerSemester).flat();
   
-  const [extraSemesters, setExtraSemesters] = useState<number[]>(() => {
-    const maxSem = Math.max(8, user.semester_aktif || 1, ...Object.keys(mkPerSemester).map(Number));
-    if (maxSem > 8) return Array.from({length: maxSem - 8}, (_, i) => 9 + i);
-    return [];
+  const maxRegisteredSem = Math.max(0, ...Object.keys(mkPerSemester).map(Number).filter(s => mkPerSemester[s]?.some((mk:any) => mk.sudah_registrasi)));
+  const highestSemToDisplay = Math.max(1, user.semester_aktif || 1, maxRegisteredSem);
+
+  const [semesterList, setSemesterList] = useState<number[]>(() => {
+    return Array.from({length: highestSemToDisplay}, (_, i) => i + 1);
   });
-  const semesterList = [1, 2, 3, 4, 5, 6, 7, 8, ...extraSemesters];
 
   const [activeSem, setActiveSem] = useState(user.semester_aktif || 1);
   
   const handleAddSemester = () => {
-    const nextSem = semesterList[semesterList.length - 1] + 1;
-    setExtraSemesters([...extraSemesters, nextSem]);
+    const nextSem = semesterList.length + 1;
+    setSemesterList([...semesterList, nextSem]);
     setActiveSem(nextSem);
   };
   
