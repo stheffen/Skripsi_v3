@@ -81,11 +81,14 @@ function RekomendasiDisplay({ text }: { text: string }) {
   );
 }
 
-export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumDiambil }: any) {
+export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumDiambil, filledSemesters }: any) {
   const [activeTab, setActiveTab] = useState<"nilai" | "evaluasi">("nilai");
   
-  // State for Nilai Tab
-  const [activeSem, setActiveSem] = useState(mahasiswa.semester_aktif || 1);
+  // State for Nilai Tab - use first available semester as default
+  const defaultSem = filledSemesters?.includes(mahasiswa.semester_aktif)
+    ? mahasiswa.semester_aktif
+    : filledSemesters?.[0] || 1;
+  const [activeSem, setActiveSem] = useState(defaultSem);
   const [semData, setSemData] = useState<any>(null);
   const [loadingSem, setLoadingSem] = useState(false);
 
@@ -194,7 +197,7 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
         {activeTab === "nilai" && (
           <div className="space-y-4 animate-in fade-in">
             <div className="flex gap-2 flex-wrap bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
-              {Array.from({ length: 14 }, (_, i) => i + 1).map(s => (
+              {filledSemesters.map((s: number) => (
                 <button
                   key={s}
                   onClick={() => setActiveSem(s)}
@@ -221,7 +224,7 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
                   </div>
                   <div className="divide-y divide-slate-200 dark:divide-slate-800">
                     {semData.wajib?.map((item: any) => <MKRowReadonly key={item.mk_id} item={item} />)}
-                    {semData.wajib?.length === 0 && <div className="p-6 text-center text-sm text-slate-500">Tidak ada MK Wajib.</div>}
+                    {semData.wajib?.length === 0 && <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada mata kuliah di semester ini.</div>}
                   </div>
                 </div>
 

@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from '@/lib/prisma';
+import { hitungSemesterAktif } from '@/lib/utils';
 
 // Helper untuk konversi huruf ke angka
 const getBobot = (nilai: string | null) => {
@@ -133,10 +134,12 @@ export async function batchUpdateKHS(userId: number, values: { khs_id: number; n
 
 export async function getFilledSemesters(userId: number) {
   try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
+    const maxSemester = hitungSemesterAktif(user?.angkatan);
+
     const allKhs = await prisma.khs.findMany({
       where: {
-        user_id: userId,
-        nilai: { not: null }
+        user_id: userId
       },
       include: {
         mata_kuliah: { select: { semester: true } }
@@ -144,6 +147,8 @@ export async function getFilledSemesters(userId: number) {
     });
 
     const semSet = new Set<number>();
+    for (let i = 1; i <= maxSemester; i++) semSet.add(i);
+
     for (const khs of allKhs) {
       const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
       semSet.add(semEfektif);

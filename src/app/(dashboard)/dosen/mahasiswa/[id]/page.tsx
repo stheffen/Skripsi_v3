@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import DetailMahasiswaClient from "./DetailMahasiswaClient";
+import { getFilledSemesters } from "@/app/actions/khs";
 
 export default async function DetailMahasiswaPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -71,11 +72,16 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
       jenis: mk.jenis,
     }));
 
+  const filledSemRes = await getFilledSemesters(mahasiswaId);
+  const filledSemesters = filledSemRes.data || [1];
+  if (filledSemesters.length === 0) filledSemesters.push(1);
+
   return (
     <DetailMahasiswaClient
       mahasiswa={mahasiswa}
       initialData={initialData}
       mkBelumDiambil={mkBelumDiambil}
+      filledSemesters={filledSemesters}
     />
   );
 }

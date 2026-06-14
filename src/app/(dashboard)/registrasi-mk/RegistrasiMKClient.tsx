@@ -53,7 +53,7 @@ function NilaiSelector({ mkId, currentNilai, onChange }: any) {
   );
 }
 
-export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any; mkPerSemester: Record<number, any[]> }) {
+export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }: { user: any; mkPerSemester: Record<number, any[]>; statHistory?: any[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   
@@ -169,6 +169,25 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   };
 
   const combinedList = [...currentKRS, ...draftMKs];
+  const currentTotalSks = combinedList.reduce((acc, mk) => acc + mk.sks, 0);
+
+  let maxAllowedSks = 24;
+  let prevIps = 0;
+  let hasPrevIps = false;
+  if (activeSem > 1) {
+    const prevSemStat = statHistory?.find(s => s.semester === activeSem - 1);
+    if (prevSemStat && prevSemStat.total_sks > 0) {
+      prevIps = prevSemStat.ips;
+      hasPrevIps = true;
+      if (prevIps >= 3.00) maxAllowedSks = 24;
+      else if (prevIps >= 2.50) maxAllowedSks = 21;
+      else if (prevIps >= 2.00) maxAllowedSks = 18;
+      else if (prevIps >= 1.50) maxAllowedSks = 15;
+      else maxAllowedSks = 12;
+    }
+  }
+
+  const isSksExceeded = currentTotalSks > maxAllowedSks;
   
   const isPrerequisitePassed = (mkKode: string) => {
     const reqs = PREREQUISITES[mkKode];
@@ -251,6 +270,13 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
         </button>
       </div>
 
+      {isSksExceeded && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-600 dark:text-amber-400 text-sm flex items-center gap-3">
+          <AlertTriangle size={18} className="shrink-0" />
+          <span>Batas SKS terlampaui! Maksimal <strong>{maxAllowedSks} SKS</strong> berdasarkan IPS Semester {activeSem - 1} ({prevIps.toFixed(2)}). Saat ini: <strong>{currentTotalSks} SKS</strong>. Hapus beberapa mata kuliah sebelum menyimpan.</span>
+        </div>
+      )}
+
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-sm flex items-center gap-3">
           <AlertTriangle size={18} /> {error}
@@ -269,16 +295,24 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
           <div className="flex items-center gap-3">
             <ClipboardList size={18} className="text-blue-600 dark:text-blue-400" />
             <h3 className="font-semibold text-slate-900 dark:text-slate-200">KRS Semester {activeSem}</h3>
-            <span className="text-xs font-medium text-slate-600 bg-slate-200 dark:text-slate-400 dark:bg-slate-800 px-2 py-1 rounded-lg">
-              {combinedList.length} MK
+            <span className={`text-xs font-medium px-2 py-1 rounded-lg ${isSksExceeded ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
+              {currentTotalSks} / {maxAllowedSks} SKS
             </span>
           </div>
-          <button
-            onClick={handleOpenModal}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-lg shadow-blue-500/20"
-          >
-            <Plus size={16} /> Tambah MK
-          </button>
+          <div className="flex items-center gap-2">
+            {hasPrevIps && (
+              <span className="hidden sm:inline-block text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                IPS Sem {activeSem - 1}: <strong className="text-slate-700 dark:text-slate-300">{prevIps.toFixed(2)}</strong>
+              </span>
+            )}
+            <button
+              onClick={handleOpenModal}
+              disabled={isSksExceeded}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus size={16} /> Tambah MK
+            </button>
+          </div>
         </div>
 
         <div className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -331,7 +365,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
         <div className="flex justify-end">
           <button
             onClick={handleSave}
-            disabled={isPending}
+            disabled={isPending || isSksExceeded}
             className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition disabled:opacity-40 shadow-lg shadow-emerald-500/20"
           >
             {isPending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={18} />}

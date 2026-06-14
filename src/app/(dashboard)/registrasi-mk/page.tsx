@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import RegistrasiMKClient from "./RegistrasiMKClient";
 import { getMKPerSemesterUntukRegistrasi } from "@/app/actions/registrasi";
+import { AkademikService } from "@/services/akademikService";
 
 export default async function RegistrasiMKPage() {
   const session = await getServerSession(authOptions);
@@ -13,5 +14,7 @@ export default async function RegistrasiMKPage() {
   const res = await getMKPerSemesterUntukRegistrasi(parseInt(user.id));
   const mkPerSemester = res.data || {};
 
-  return <RegistrasiMKClient user={user} mkPerSemester={mkPerSemester} />;
+  const stats = await AkademikService.statistikPerSemester(parseInt(user.id));
+
+  return <RegistrasiMKClient user={user} mkPerSemester={mkPerSemester} statHistory={stats} />;
 }

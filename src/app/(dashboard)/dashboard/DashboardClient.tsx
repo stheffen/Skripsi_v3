@@ -14,7 +14,7 @@ const DashboardTrenIpsChart = dynamic(
 
 function RiskBadge({ kategori }: { kategori: string | null | undefined }) {
   if (!kategori || kategori === 'Belum Dianalisis') {
-    return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400">Belum Dianalisis</span>;
+    return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Belum Dianalisis</span>;
   }
   const colorClass = 
     kategori === 'Tinggi' ? 'bg-risk-tinggi/10 text-risk-tinggi border border-risk-tinggi/20 dark:bg-transparent dark:text-risk-tinggi dark:border-risk-tinggi/50 dark:shadow-[0_0_10px_var(--color-risk-tinggi)]' :
@@ -85,7 +85,7 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
               <TrendingUp size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.ipk.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik?.ipk?.toFixed(2) ?? '-'}</p>
           <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
         </div>
         
@@ -96,7 +96,7 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
               <Activity size={16} className="text-purple-600 dark:text-purple-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.ips.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik?.ips?.toFixed(2) ?? '-'}</p>
           <p className="text-xs text-slate-500 mt-1">dari 4.00</p>
         </div>
 
@@ -154,7 +154,7 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
           ) : (
             <div className="text-center py-8">
               <BarChart3 size={32} className="text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-400 text-sm mb-3">Belum ada analisis risiko</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Belum ada analisis risiko</p>
               <Link href="/hasil-analisis" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors text-sm">
                 Mulai Analisis
               </Link>

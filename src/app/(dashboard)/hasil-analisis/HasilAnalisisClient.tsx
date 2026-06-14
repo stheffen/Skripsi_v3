@@ -196,7 +196,9 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
     }
   };
 
-  const fuzzyDetail = result?.detail_fuzzy ? JSON.parse(result.detail_fuzzy) : result?.fuzzifikasi ? result : null;
+  const fuzzyDetail = result?.detail_fuzzy
+    ? (() => { try { return JSON.parse(result.detail_fuzzy); } catch { return null; } })()
+    : (result?.fuzzifikasi ? result : null);
   const radarData = result
     ? [
         { subject: "IPS", A: (result.ips / 4) * 100, fullMark: 100 },
@@ -211,8 +213,8 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Analisis Risiko Akademik</h1>
-        <p className="text-slate-400 text-sm mt-1">Perhitungan menggunakan metode Logika Fuzzy Mamdani</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Analisis Risiko Akademik</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Perhitungan menggunakan metode Logika Fuzzy Mamdani</p>
       </div>
 
       {/* Trigger Panel */}
@@ -255,7 +257,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
       {!result ? (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center">
           <BarChart3 size={48} className="text-slate-700 mx-auto mb-4" />
-          <p className="text-slate-300 font-medium mb-2">Belum ada analisis risiko</p>
+          <p className="text-slate-900 dark:text-slate-300 font-medium mb-2">Belum ada analisis risiko</p>
           <p className="text-slate-500 text-sm">Pilih semester dan klik "Hitung Analisis" untuk memulai</p>
         </div>
       ) : (
@@ -281,11 +283,11 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
               </div>
               <div className="sm:ml-auto grid grid-cols-3 gap-6 text-center w-full sm:w-auto mt-4 sm:mt-0">
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ips?.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ips?.toFixed(2) ?? '-'}</p>
                   <p className="text-xs text-slate-500 mt-1">IPS</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ipk?.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{result.ipk?.toFixed(2) ?? '-'}</p>
                   <p className="text-xs text-slate-500 mt-1">IPK</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">

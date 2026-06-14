@@ -98,9 +98,11 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
   const [showFullRek, setShowFullRek] = useState<Record<number, boolean>>({});
 
   const riwayat = riwayatData.map(item => {
-    let parsedDetail = {};
+    let parsedDetail: any = {};
     try {
-      parsedDetail = JSON.parse(item.detail_fuzzy);
+      if (item.detail_fuzzy) {
+        parsedDetail = JSON.parse(item.detail_fuzzy);
+      }
     } catch(e) {}
     return {
       ...item,
@@ -121,14 +123,14 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Riwayat Analisis Risiko</h1>
-        <p className="text-slate-400 text-sm mt-1">{riwayat.length} analisis tersimpan</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Riwayat Analisis Risiko</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{riwayat.length} analisis tersimpan</p>
       </div>
 
       {riwayat.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center">
           <History size={48} className="text-slate-700 mx-auto mb-4" />
-          <p className="text-slate-300 font-medium mb-2">Belum ada riwayat analisis</p>
+          <p className="text-slate-900 dark:text-slate-300 font-medium mb-2">Belum ada riwayat analisis</p>
           <p className="text-slate-500 text-sm mb-4">Lakukan analisis risiko terlebih dahulu</p>
           <Link href="/hasil-analisis" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition-colors text-sm">
             Mulai Analisis
