@@ -1,5 +1,19 @@
 import prisma from '@/lib/prisma';
 
+export const MATA_KULIAH_BERBINTANG = [
+  'TIPK101', // Pend. Agama Katolik/Etika Sosial
+  'TIKK104', // Algoritma dan Pemrograman
+  'TIKB204', // Sistem Basis Data
+  'TIPK302', // Pendidikan Kewarganegaraan
+  'TIKK311', // Logika Informatika
+  'TIKB408', // Pemrograman Visual
+  'TIKK513', // Metodologi Penelitian
+  'TIKB614', // Kerja Praktek
+  'TIPK703', // Bahasa Indonesia
+  'TIPB801', // Etika Profesi
+  'TIPK801', // Pendidikan Pancasila
+];
+
 export class AkademikService {
   /**
    * Hitung IPS untuk semester tertentu.
@@ -64,23 +78,18 @@ export class AkademikService {
     return Number((totalBobot / totalSks).toFixed(2));
   }
 
-  /**
-   * Hitung jumlah MK bermasalah (nilai D atau E)
-   */
   static async hitungMKBermasalah(userId: number): Promise<number> {
-    const count = await prisma.khs.count({
-      where: {
-        user_id: userId,
-        nilai: { in: ['D', 'E'] },
-      },
-    });
-    return count;
+    const detail = await this.getMKBermasalahDetail(userId);
+    return detail.length;
   }
 
   /**
    * Kembalikan detail MK bermasalah (D/E)
    */
   static async getMKBermasalahDetail(userId: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
+    const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
+    
     const khsList = await prisma.khs.findMany({
       where: {
         user_id: userId,
@@ -91,17 +100,52 @@ export class AkademikService {
       },
     });
 
-    const result = khsList.map((khs: any) => {
-      const mk = khs.mata_kuliah;
-      return {
-        kode: mk.kode,
-        nama: mk.nama,
-        sks: mk.sks,
-        nilai: khs.nilai!,
-        semester: khs.semester_override ?? mk.semester,
-        jenis: mk.jenis,
-      };
+    let dCountReguler = 0;
+    const bermasalahList: any[] = [];
+
+    // Sort KHS so that 'E' and Starred Courses are prioritized
+    khsList.sort((a: any, b: any) => {
+      if (a.nilai === 'E' && b.nilai !== 'E') return -1;
+      if (a.nilai !== 'E' && b.nilai === 'E') return 1;
+      return 0;
     });
+
+    for (const khs of khsList) {
+      const mk = khs.mata_kuliah;
+      const isBintang = MATA_KULIAH_BERBINTANG.includes(mk.kode);
+      let isBermasalah = false;
+
+      if (khs.nilai === 'E') {
+        isBermasalah = true;
+      } else if (khs.nilai === 'D') {
+        if (isBintang) {
+          isBermasalah = true; // Bintang D mutlak bermasalah
+        } else if (angkatan >= 2026) {
+          isBermasalah = true; // >= 2026 D mutlak bermasalah
+        } else {
+          // < 2026, boleh 2 D reguler
+          if (dCountReguler < 2) {
+            dCountReguler++;
+            isBermasalah = false; 
+          } else {
+            isBermasalah = true; // Kuota 2 D habis
+          }
+        }
+      }
+
+      if (isBermasalah) {
+        bermasalahList.push({
+          kode: mk.kode,
+          nama: mk.nama,
+          sks: mk.sks,
+          nilai: khs.nilai!,
+          semester: khs.semester_override ?? mk.semester,
+          jenis: mk.jenis,
+        });
+      }
+    }
+
+    const result = bermasalahList;
 
     // Urutkan: E dulu, lalu D; dan SKS besar dulu
     result.sort((a: any, b: any) => {
@@ -199,6 +243,9 @@ export class AkademikService {
    * hanya dalam 1 KALI eksekusi database. Mengatasi N+1 Query.
    */
   static async getAkademikSummary(userId: number, semesterAktif: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
+    const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
+    
     const allKhs = await prisma.khs.findMany({
       where: {
         user_id: userId,
@@ -217,15 +264,44 @@ export class AkademikService {
     
     let mkBermasalahCount = 0;
     let totalSksLulus = 0;
+    let dCountReguler = 0;
     
     const semStats: Record<number, any> = {};
+
+    // Sort to process E and Starred courses first for deterministic D quota usage
+    allKhs.sort((a: any, b: any) => {
+      if (a.nilai === 'E' && b.nilai !== 'E') return -1;
+      if (a.nilai !== 'E' && b.nilai === 'E') return 1;
+      return 0;
+    });
 
     for (const khs of allKhs) {
       const sks = khs.mata_kuliah.sks;
       const bobot = khs.bobot_nilai ?? 0;
       const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
-      const isLulus = ['A', 'B', 'C'].includes(khs.nilai!);
-      const isBermasalah = ['D', 'E'].includes(khs.nilai!);
+      
+      const isBintang = MATA_KULIAH_BERBINTANG.includes(khs.mata_kuliah.kode);
+      let isLulus = false;
+      let isBermasalah = false;
+
+      if (['A', 'B', 'C'].includes(khs.nilai!)) {
+        isLulus = true;
+      } else if (khs.nilai === 'E') {
+        isBermasalah = true;
+      } else if (khs.nilai === 'D') {
+        if (isBintang) {
+          isBermasalah = true;
+        } else if (angkatan >= 2026) {
+          isBermasalah = true;
+        } else {
+          if (dCountReguler < 2) {
+            dCountReguler++;
+            isLulus = true; // D is passed if within quota
+          } else {
+            isBermasalah = true;
+          }
+        }
+      }
 
       // Kumulatif (IPK, SKS Tempuh)
       totalBobotKumulatif += bobot * sks;

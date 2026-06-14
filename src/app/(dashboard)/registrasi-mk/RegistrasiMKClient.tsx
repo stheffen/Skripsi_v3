@@ -14,6 +14,24 @@ const NILAI_COLORS: Record<string, string> = {
   E: "bg-red-500/20 text-red-300 border-red-500/30",
 };
 
+const PREREQUISITES: Record<string, string[]> = {
+  'TIKK205': ['TIKK102'], // Bahasa Inggris II -> Bahasa Inggris I
+  'TIKK206': ['TIKK103'], // Kalkulus II -> Kalkulus I
+  'TIKK203': ['TIKK105'], // Struktur Data -> Logika Pemrograman
+  
+  'TIKK310': ['TIKK101'], // Matematika Diskrit -> Aljabar Linear
+  'TIKB306': ['TIKK208'], // APSI -> SIM
+  
+  'TIKB411': ['TIKK105'], // Pemrograman Android -> Logika Pemrograman
+  
+  'TIKK513': ['TIKK207'], // Metodologi Penelitian -> Statistika
+  'TIKB512': ['TIKB408'], // Pemrograman Visual Lanjutan -> Pemrograman Visual
+  
+  'TIKB614': ['TIKK513'], // Kerja Praktek -> Metodologi Penelitian
+  
+  'TIBB803': ['TIKK513'], // Skripsi -> Metodologi Penelitian
+};
+
 function NilaiSelector({ mkId, currentNilai, onChange }: any) {
   return (
     <div className="flex gap-1">
@@ -152,9 +170,30 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
 
   const combinedList = [...currentKRS, ...draftMKs];
   
+  const isPrerequisitePassed = (mkKode: string) => {
+    const reqs = PREREQUISITES[mkKode];
+    if (!reqs || reqs.length === 0) return true;
+    
+    // Check if user passed ALL prerequisites (Nilai A, B, C, or D)
+    return reqs.every(reqKode => {
+      const course = allMKs.find(m => m.kode === reqKode);
+      if (!course || !course.sudah_registrasi || !course.nilai) return false;
+      return ['A', 'B', 'C', 'D'].includes(course.nilai);
+    });
+  };
+
   // MK yang bisa dipilih di modal = Belum registrasi atau (sudah registrasi tapi nilai D/E DAN BUKAN di semester aktif)
   // dan belum ada di draft
   const availableMKs = allMKs.filter(mk => {
+    // 1. Aturan Ganjil/Genap
+    const isActiveSemGanjil = activeSem % 2 !== 0;
+    const isCurriculumGanjil = mk.semester % 2 !== 0;
+    if (isActiveSemGanjil !== isCurriculumGanjil) return false;
+
+    // 2. Aturan Prasyarat (Prerequisites)
+    if (!isPrerequisitePassed(mk.kode)) return false;
+
+    // 3. Status Pengambilan
     const isBelumDiambil = !mk.sudah_registrasi;
     // Bisa diulang/dipindah asalkan tidak sedang berada di semester aktif ini
     const isRetakeable = mk.sudah_registrasi && !currentKRS.find((c: any) => c.id === mk.id);
