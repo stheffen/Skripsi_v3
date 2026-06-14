@@ -12,8 +12,11 @@ const NILAI_COLORS: Record<string, string> = {
   E: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/30",
 };
 
-export default function InputNilaiClient({ user }: { user: any }) {
-  const [activeSem, setActiveSem] = useState(user?.semester_aktif || 1);
+export default function InputNilaiClient({ user, filledSemesters }: { user: any, filledSemesters: number[] }) {
+  const defaultSem = filledSemesters.includes(user?.semester_aktif) 
+    ? user?.semester_aktif 
+    : filledSemesters[filledSemesters.length - 1];
+  const [activeSem, setActiveSem] = useState(defaultSem || 1);
   const [semData, setSemData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +67,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
       </div>
 
       <div className="flex gap-2 flex-wrap bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        {Array.from({ length: Math.max(8, user?.semester_aktif || 8) }, (_, i) => i + 1).map(s => (
+        {filledSemesters.map(s => (
           <button
             key={s}
             onClick={() => setActiveSem(s)}

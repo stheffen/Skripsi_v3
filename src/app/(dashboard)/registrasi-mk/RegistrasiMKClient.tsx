@@ -43,7 +43,9 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   const allMKs = Object.values(mkPerSemester).flat();
   
   const maxRegisteredSem = Math.max(0, ...Object.keys(mkPerSemester).map(Number).filter(s => mkPerSemester[s]?.some((mk:any) => mk.sudah_registrasi)));
-  const highestSemToDisplay = Math.max(1, user.semester_aktif || 1, maxRegisteredSem);
+  // Hanya tampilkan tab berdasarkan riwayat registrasi MK.
+  // Jika belum pernah registrasi (mahasiswa baru), maka paksa mulai dari tab Sem 1 saja.
+  const highestSemToDisplay = Math.max(1, maxRegisteredSem);
 
   const [semesterList, setSemesterList] = useState<number[]>(() => {
     return Array.from({length: highestSemToDisplay}, (_, i) => i + 1);
