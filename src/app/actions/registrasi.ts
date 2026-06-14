@@ -73,10 +73,14 @@ export async function registrasiMK(
     });
 
     if (existing) {
-      // Update nilai saja jika sudah ada
+      // Update nilai dan semester (jika dipindah/mengulang)
       await prisma.khs.update({
         where: { id: existing.id },
-        data: { nilai: nilai || null, bobot_nilai: getBobot(nilai) },
+        data: { 
+          nilai: nilai || null, 
+          bobot_nilai: getBobot(nilai),
+          semester_override: semesterInput 
+        },
       });
       return { success: true, action: "updated" };
     }

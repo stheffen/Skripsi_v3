@@ -90,8 +90,10 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   };
 
   const handleAddFromModal = () => {
-    const toAdd = allMKs.filter(mk => selectedInModal[mk.id] && !mk.sudah_registrasi && !draftMKs.find(d => d.id === mk.id));
-    setDraftMKs([...draftMKs, ...toAdd]);
+    const toAdd = allMKs.filter(mk => selectedInModal[mk.id] && (!mk.sudah_registrasi || mk.nilai === 'D' || mk.nilai === 'E') && !draftMKs.find(d => d.id === mk.id));
+    // Reset nilai untuk matkul yang diulang
+    const updatedDrafts = toAdd.map(mk => ({ ...mk, is_retake: mk.sudah_registrasi }));
+    setDraftMKs([...draftMKs, ...updatedDrafts]);
     setIsModalOpen(false);
   };
 
@@ -113,7 +115,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
     // Gabungkan currentKRS yang nilainya berubah + draftMKs
     const entries: { mkId: number; nilai: string | null; semester: number }[] = [];
     
-    // Drafts
+    // Drafts (Set nilai ke null saat draft disimpan, kecuali sudah diset)
     draftMKs.forEach(mk => {
       entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
     });
@@ -148,8 +150,16 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
 
   const combinedList = [...currentKRS, ...draftMKs];
   
-  // MK yang bisa dipilih di modal = Belum registrasi dan belum ada di draft
-  const availableMKs = allMKs.filter(mk => !mk.sudah_registrasi && !draftMKs.find(d => d.id === mk.id));
+  // MK yang bisa dipilih di modal = Belum registrasi atau (sudah registrasi tapi nilai D/E DAN BUKAN di semester aktif)
+  // dan belum ada di draft
+  const availableMKs = allMKs.filter(mk => {
+    const isBelumDiambil = !mk.sudah_registrasi;
+    // Bisa diulang/dipindah asalkan tidak sedang berada di semester aktif ini
+    const isRetakeable = mk.sudah_registrasi && !currentKRS.find((c: any) => c.id === mk.id);
+    const isNotInDraft = !draftMKs.find(d => d.id === mk.id);
+    return (isBelumDiambil || isRetakeable) && isNotInDraft;
+  });
+
   const filteredModalMKs = availableMKs.filter(mk => 
     mk.nama.toLowerCase().includes(modalSearch.toLowerCase()) || 
     mk.kode.toLowerCase().includes(modalSearch.toLowerCase())
@@ -246,6 +256,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
                       {isDraft && <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Baru</span>}
+                      {mk.is_retake && <span className="text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Mengulang</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-slate-500">{mk.kode}</span>
@@ -328,7 +339,14 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
                               className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 accent-blue-600 dark:accent-blue-500"
                             />
                             <div>
-                              <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
+                                {mk.sudah_registrasi && (
+                                  <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                    {mk.nilai ? `Nilai ${mk.nilai} (Bisa Diulang)` : 'Pindah Semester'}
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex gap-2 text-xs text-slate-500 mt-1">
                                 <span>{mk.kode}</span>
                                 <span>&bull;</span>
