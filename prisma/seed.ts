@@ -46,7 +46,7 @@ async function main() {
     { kode: 'TIKB512', nama: 'Pemrograman Visual Lanjutan', sks: 3, semester: 5, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIKB513', nama: 'Grafika Komputer', sks: 4, semester: 5, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIKK515', nama: 'Teori Bahasa dan Automata', sks: 4, semester: 5, jenis: 'TIKK', is_pilihan: false, kelompok_pilihan: null },
-    { kode: 'TIKP501', nama: 'Konsentrasi Data Mining dan Warehouse', sks: 3, semester: 5, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem5' },
+    { kode: 'TIKP501', nama: 'Konsep Data Mining dan Warehouse', sks: 3, semester: 5, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem5' },
 
     // ===== SEMESTER 6 =====
     { kode: 'TIKB614', nama: 'Kerja Praktek', sks: 2, semester: 6, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },

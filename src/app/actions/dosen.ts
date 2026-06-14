@@ -52,7 +52,14 @@ export async function getDosenDashboard(dosenId: number) {
         else if (ar.kategori === 'Sedang') risikoSedang++;
         else if (ar.kategori === 'Rendah') risikoRendah++;
         
-        totalMkBermasalah += ar.mk_bermasalah;
+        let trueCount = ar.mk_bermasalah;
+        if (ar.detail_fuzzy) {
+          try {
+            const parsed = JSON.parse(ar.detail_fuzzy);
+            if (parsed.input?.mkDetail) trueCount = parsed.input.mkDetail.length;
+          } catch(e) {}
+        }
+        totalMkBermasalah += trueCount;
       }
     });
 
@@ -114,7 +121,16 @@ export async function getDosenMahasiswaList(dosenId: number) {
         risiko: ar ? ar.kategori : 'Belum Dianalisis',
         ips: ar ? ar.ips : 0,
         ipk: ar ? ar.ipk : 0,
-        mk_bermasalah: ar ? ar.mk_bermasalah : 0,
+        mk_bermasalah: (() => {
+          if (!ar) return 0;
+          if (ar.detail_fuzzy) {
+            try {
+              const parsed = JSON.parse(ar.detail_fuzzy);
+              if (parsed.input?.mkDetail) return parsed.input.mkDetail.length;
+            } catch(e) {}
+          }
+          return ar.mk_bermasalah;
+        })(),
       };
     });
 

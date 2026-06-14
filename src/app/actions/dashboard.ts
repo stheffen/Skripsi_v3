@@ -22,6 +22,7 @@ export async function getDashboardData(userId: number, semesterAktif: number) {
       ipk: summary.ipk,
       ips: summary.ips,
       mk_bermasalah: summary.mk_bermasalah,
+      total_mk_d_e: summary.total_mk_d_e,
       total_sks_tempuh: summary.total_sks_tempuh,
       total_sks_lulus: summary.total_sks_lulus,
     },
