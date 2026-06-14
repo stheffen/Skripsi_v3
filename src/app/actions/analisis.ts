@@ -25,6 +25,7 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : null;
 
     const totalSksLulus = await AkademikService.hitungTotalSKSLulus(userId);
+    const totalSksTempuh = await AkademikService.hitungTotalSKSTempuh(userId);
     const sisaSks = Math.max(0, 144 - totalSksLulus);
 
     // Fuzzy Mamdani processing (angkatan >= 2026 -> 9 aturan, else 27 aturan)
@@ -43,6 +44,16 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       nextSemesterCourses
     );
 
+    const detailToSave = {
+      ...fuzzyResult,
+      input: {
+        ...fuzzyResult.input,
+        mkDetail: mkDetail
+      },
+      total_sks_tempuh: totalSksTempuh,
+      total_sks_lulus: totalSksLulus,
+    };
+
     // Save to database
     const analisis = await prisma.analisisRisiko.create({
       data: {
@@ -54,7 +65,7 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
         fuzzy_output: fuzzyResult.crisp_output,
         kategori: fuzzyResult.kategori,
         rekomendasi,
-        detail_fuzzy: JSON.stringify(fuzzyResult),
+        detail_fuzzy: JSON.stringify(detailToSave),
       },
     });
 

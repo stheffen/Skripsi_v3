@@ -11,8 +11,8 @@ export default async function DosenMahasiswaPage() {
     redirect("/login");
   }
 
-  const res = await getDosenMahasiswaList();
+  const res = await getDosenMahasiswaList(parseInt(session.user.id));
   const mahasiswaList = res.data || [];
 
-  return <DosenMahasiswaClient mahasiswaList={mahasiswaList} />;
+  return <DosenMahasiswaClient dosenId={parseInt(session.user.id)} mahasiswaList={mahasiswaList} />;
 }

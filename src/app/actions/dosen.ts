@@ -2,15 +2,36 @@
 
 import prisma from '@/lib/prisma';
 
-export async function getDosenDashboard() {
+export async function getDosenDashboard(dosenId: number) {
   try {
-    const totalMahasiswa = await prisma.user.count({
-      where: { role: 'mahasiswa' },
+    const dmMaps = await prisma.dosenMahasiswa.findMany({
+      where: { dosen_id: dosenId },
+      select: { mahasiswa_id: true }
     });
+    
+    const mahasiswaIds = dmMaps.map((dm: any) => dm.mahasiswa_id);
 
-    // Ambil analisis terbaru dari semua mahasiswa
+    const totalMahasiswa = mahasiswaIds.length;
+
+    if (totalMahasiswa === 0) {
+      return {
+        success: true,
+        data: {
+          total_mahasiswa: 0,
+          risiko_tinggi: 0,
+          risiko_sedang: 0,
+          risiko_rendah: 0,
+          total_mk_bermasalah: 0,
+        }
+      };
+    }
+
+    // Ambil analisis terbaru dari mahasiswa bimbingan
     const mahasiswa = await prisma.user.findMany({
-      where: { role: 'mahasiswa' },
+      where: { 
+        id: { in: mahasiswaIds },
+        role: 'mahasiswa' 
+      },
       include: {
         analisis_risiko: {
           orderBy: { created_at: 'desc' },
@@ -50,10 +71,24 @@ export async function getDosenDashboard() {
   }
 }
 
-export async function getDosenMahasiswaList() {
+export async function getDosenMahasiswaList(dosenId: number) {
   try {
+    const dmMaps = await prisma.dosenMahasiswa.findMany({
+      where: { dosen_id: dosenId },
+      select: { mahasiswa_id: true }
+    });
+    
+    const mahasiswaIds = dmMaps.map((dm: any) => dm.mahasiswa_id);
+
+    if (mahasiswaIds.length === 0) {
+      return { success: true, data: [] };
+    }
+
     const mahasiswaList = await prisma.user.findMany({
-      where: { role: 'mahasiswa' },
+      where: { 
+        id: { in: mahasiswaIds },
+        role: 'mahasiswa' 
+      },
       select: {
         id: true,
         name: true,
@@ -86,5 +121,61 @@ export async function getDosenMahasiswaList() {
     return { success: true, data: formattedList };
   } catch (error: any) {
     return { error: error.message || "Gagal memuat daftar mahasiswa" };
+  }
+}
+
+export async function getAvailableMahasiswa(dosenId: number) {
+  try {
+    const dmMaps = await prisma.dosenMahasiswa.findMany({
+      where: { dosen_id: dosenId },
+      select: { mahasiswa_id: true }
+    });
+    
+    const assignedIds = dmMaps.map((dm: any) => dm.mahasiswa_id);
+
+    const available = await prisma.user.findMany({
+      where: {
+        role: 'mahasiswa',
+        id: { notIn: assignedIds }
+      },
+      select: {
+        id: true,
+        name: true,
+        nim: true,
+        semester_aktif: true
+      },
+      orderBy: { name: 'asc' }
+    });
+
+    return { success: true, data: available };
+  } catch (error: any) {
+    return { error: "Gagal memuat mahasiswa tersedia" };
+  }
+}
+
+export async function addMahasiswaBimbingan(dosenId: number, mahasiswaIds: number[]) {
+  try {
+    const data = mahasiswaIds.map(id => ({
+      dosen_id: dosenId,
+      mahasiswa_id: id,
+    }));
+    await prisma.dosenMahasiswa.createMany({
+      data,
+      skipDuplicates: true,
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { error: "Gagal menambahkan mahasiswa" };
+  }
+}
+
+export async function removeMahasiswaBimbingan(dosenId: number, mahasiswaId: number) {
+  try {
+    await prisma.dosenMahasiswa.deleteMany({
+      where: { dosen_id: dosenId, mahasiswa_id: mahasiswaId }
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { error: "Gagal menghapus mahasiswa" };
   }
 }
