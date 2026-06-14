@@ -60,46 +60,43 @@ export async function getSemesterKHS(userId: number, semester: number) {
 }
 
 export async function getCurriculumNilai(userId: number, semester: number) {
-  // Ambil semua MK yang memang berada di semester kurikulum ini
-  const mks = await prisma.mataKuliah.findMany({
-    where: { semester: semester },
-    orderBy: { nama: 'asc' }
-  });
-
-  // Ambil KHS user untuk melihat apakah sudah ada nilainya
+  // Ambil KHS user untuk melihat matkul apa yang SUDAH diregistrasikan di semester ini
   const khsList = await prisma.khs.findMany({
     where: { 
       user_id: userId,
-      mata_kuliah_id: { in: mks.map(m => m.id) }
-    }
+      // Cek yang asli dari semester ini ATAU yang di-override ke semester ini
+      OR: [
+        { mata_kuliah: { semester: semester }, semester_override: null },
+        { semester_override: semester }
+      ]
+    },
+    include: { mata_kuliah: true }
   });
 
   const khsMap = new Map(khsList.map(k => [k.mata_kuliah_id, k]));
 
-  const wajib: any[] = [];
-  const pilihan: Record<string, any[]> = {};
-  const pindahan: any[] = []; // Tetap kembalikan array kosong agar kompatibel dengan UI
-
-  for (const mk of mks) {
+  for (const khs of khsList) {
+    const mk = khs.mata_kuliah;
     const isPilihan = mk.jenis === "Pilihan";
-    const khs = khsMap.get(mk.id);
 
     const data = {
-      khs_id: khs?.id ?? null,
+      khs_id: khs.id,
       mk_id: mk.id,
       kode: mk.kode,
       nama: mk.nama,
       sks: mk.sks,
       jenis: mk.jenis,
       semester_asli: mk.semester,
-      semester_override: khs?.semester_override ?? null,
-      semester_efektif: mk.semester,
-      nilai: khs?.nilai ?? null,
-      bobot_nilai: khs?.bobot_nilai ?? null,
-      is_pindahan: false,
+      semester_override: khs.semester_override,
+      semester_efektif: semester,
+      nilai: khs.nilai,
+      bobot_nilai: khs.bobot_nilai,
+      is_pindahan: khs.semester_override !== null && khs.semester_override !== mk.semester,
     };
 
-    if (isPilihan) {
+    if (data.is_pindahan) {
+      pindahan.push(data);
+    } else if (isPilihan) {
       const groupKey = `Pilihan_Sem_${semester}`; 
       if (!pilihan[groupKey]) pilihan[groupKey] = [];
       pilihan[groupKey].push(data);

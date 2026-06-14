@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from '@/lib/prisma';
+import { hitungSemesterAktif } from '@/lib/utils';
 
 // Helper function to safely get Prisma Client for Auth adapter
 const getPrisma = () => {
@@ -55,11 +56,23 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.nim = user.nim;
-        token.semester_aktif = user.semester_aktif;
         token.angkatan = (user as any).angkatan;
+        
+        // Kalkulasi otomatis semester aktif untuk mahasiswa
+        if (user.role === 'mahasiswa') {
+          token.semester_aktif = hitungSemesterAktif((user as any).angkatan);
+        } else {
+          token.semester_aktif = user.semester_aktif;
+        }
       }
       if (trigger === "update" && session?.semester_aktif !== undefined) {
         token.semester_aktif = session.semester_aktif;
+      }
+      if (trigger === "update" && session?.angkatan !== undefined) {
+        token.angkatan = session.angkatan;
+        if (token.role === 'mahasiswa') {
+          token.semester_aktif = hitungSemesterAktif(session.angkatan);
+        }
       }
       return token;
     },

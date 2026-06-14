@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { hitungSemesterAktif } from "@/lib/utils";
 
 export async function updateProfile(userId: string, data: { name: string; email: string; nim: string; angkatan?: string; semester_aktif?: number; phone?: string; password?: string }) {
   try {
@@ -34,8 +35,13 @@ export async function updateProfile(userId: string, data: { name: string; email:
       phone: data.phone || null,
     };
 
-    if (data.angkatan) updateData.angkatan = data.angkatan;
-    if (data.semester_aktif) updateData.semester_aktif = data.semester_aktif;
+    if (data.angkatan) {
+      updateData.angkatan = data.angkatan;
+      // Auto kalibrasi semester aktif di DB
+      updateData.semester_aktif = hitungSemesterAktif(data.angkatan);
+    } else if (data.semester_aktif) {
+      updateData.semester_aktif = data.semester_aktif;
+    }
     
     if (data.password && data.password.trim().length > 0) {
       const bcrypt = await import("bcryptjs");
