@@ -291,7 +291,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
                   <p className="text-xs text-slate-500 mt-1">IPK</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                  <p className={`text-2xl font-bold ${result.mk_bermasalah > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>{result.mk_bermasalah}</p>
+                  <p className={`text-2xl font-bold ${(result.mk_bermasalah_detail?.length ?? result.mk_bermasalah) > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>{result.mk_bermasalah_detail?.length ?? result.mk_bermasalah}</p>
                   <p className="text-xs text-slate-500 mt-1">MK D/E</p>
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
                   </div>
                   {angkatanMode !== "baru_9_aturan" && fuzzyDetail.fuzzifikasi.mk && (
                     <div>
-                      <p className="text-xs text-slate-400 mb-2 font-medium">MK Bermasalah = {result.mk_bermasalah}</p>
+                      <p className="text-xs text-slate-400 mb-2 font-medium">Input Fuzzy MK Bermasalah = {result.mk_bermasalah}</p>
                       <div className="space-y-1.5">
                         <MembershipBar label="Sedikit" value={fuzzyDetail.fuzzifikasi.mk.sedikit} color="#10b981" />
                         <MembershipBar label="Sedang" value={fuzzyDetail.fuzzifikasi.mk.sedang} color="#f59e0b" />

@@ -104,15 +104,15 @@ export default function DashboardClient({ user, data }: { user: any, data: any }
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">MK Bermasalah</p>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-              akademik.mk_bermasalah > 0 ? 'bg-red-500/20' : 'bg-emerald-500/20'
+              (akademik.total_mk_d_e ?? akademik.mk_bermasalah) > 0 ? 'bg-red-500/20' : 'bg-emerald-500/20'
             }`}>
-              {akademik.mk_bermasalah > 0
+              {(akademik.total_mk_d_e ?? akademik.mk_bermasalah) > 0
                 ? <AlertTriangle size={16} className="text-red-600 dark:text-red-400" />
                 : <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400" />
               }
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.mk_bermasalah}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{akademik.total_mk_d_e ?? akademik.mk_bermasalah}</p>
           <p className="text-xs text-slate-500 mt-1">nilai D / E</p>
         </div>
 

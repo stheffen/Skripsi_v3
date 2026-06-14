@@ -280,6 +280,7 @@ export class AkademikService {
     let mkBermasalahCount = 0;
     let totalSksLulus = 0;
     let dCountReguler = 0;
+    let totalMkDE = 0;
     
     const semStats: Record<number, any> = {};
 
@@ -303,7 +304,9 @@ export class AkademikService {
         isLulus = true;
       } else if (khs.nilai === 'E') {
         isBermasalah = true;
+        totalMkDE++;
       } else if (khs.nilai === 'D') {
+        totalMkDE++;
         if (isBintang) {
           isBermasalah = true;
         } else if (angkatan >= 2026) {
@@ -358,6 +361,7 @@ export class AkademikService {
       ipk: totalSksKumulatif > 0 ? Number((totalBobotKumulatif / totalSksKumulatif).toFixed(2)) : 0.0,
       ips: totalSksSemester > 0 ? Number((totalBobotSemester / totalSksSemester).toFixed(2)) : 0.0,
       mk_bermasalah: mkBermasalahCount,
+      total_mk_d_e: totalMkDE,
       total_sks_tempuh: totalSksKumulatif,
       total_sks_lulus: totalSksLulus,
       statistik_semester,

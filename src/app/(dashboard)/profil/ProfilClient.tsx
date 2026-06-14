@@ -148,26 +148,30 @@ export default function ProfilClient({ user }: { user: any }) {
                     required
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Induk (NIM / NIDN)</label>
-                  <input
-                    type="text"
-                    name="nim"
-                    value={formData.nim}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 transition"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Telepon</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 transition"
-                  />
-                </div>
+                {user.role === 'mahasiswa' && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Induk (NIM)</label>
+                      <input
+                        type="text"
+                        name="nim"
+                        value={formData.nim}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 transition"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Telepon</label>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-200 transition"
+                      />
+                    </div>
+                  </>
+                )}
                 
                 {user.role === 'mahasiswa' && (
                   <>
@@ -235,28 +239,27 @@ export default function ProfilClient({ user }: { user: any }) {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center flex-shrink-0 text-indigo-600 dark:text-indigo-400">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 font-medium mb-0.5">Nomor Induk</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">{user.nim || (user as any).nidn || '-'}</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center flex-shrink-0 text-rose-600 dark:text-rose-400">
-                    <Phone size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 font-medium mb-0.5">Nomor Telepon</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">{user.phone || '-'}</p>
-                  </div>
-                </div>
-
                 {user.role === 'mahasiswa' && (
                   <>
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center flex-shrink-0 text-indigo-600 dark:text-indigo-400">
+                        <FileText size={20} />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">Nomor Induk</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">{user.nim || '-'}</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center flex-shrink-0 text-rose-600 dark:text-rose-400">
+                        <Phone size={20} />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">Nomor Telepon</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">{user.phone || '-'}</p>
+                      </div>
+                    </div>
                     <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 text-emerald-600 dark:text-emerald-400">
                         <Calendar size={20} />
