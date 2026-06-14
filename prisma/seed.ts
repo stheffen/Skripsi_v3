@@ -47,7 +47,6 @@ async function main() {
     { kode: 'TIKB513', nama: 'Grafika Komputer', sks: 4, semester: 5, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIKK515', nama: 'Teori Bahasa dan Automata', sks: 4, semester: 5, jenis: 'TIKK', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIKP501', nama: 'Konsentrasi Data Mining dan Warehouse', sks: 3, semester: 5, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem5' },
-    { kode: 'TIKP502', nama: 'Sistem Mikroprosesor', sks: 3, semester: 5, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem5' },
 
     // ===== SEMESTER 6 =====
     { kode: 'TIKB614', nama: 'Kerja Praktek', sks: 2, semester: 6, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },
@@ -66,7 +65,6 @@ async function main() {
     { kode: 'TIBB702', nama: 'Komputer dan Masyarakat', sks: 2, semester: 7, jenis: 'TIBB', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIBB707', nama: 'Sistem Informasi Akuntansi', sks: 2, semester: 7, jenis: 'TIBB', is_pilihan: false, kelompok_pilihan: null },
     { kode: 'TIKP705', nama: 'Jaringan Komputer Lanjutan', sks: 3, semester: 7, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem7' },
-    { kode: 'TIKP706', nama: 'Sistem Informasi Geografis', sks: 3, semester: 7, jenis: 'TIKP', is_pilihan: true, kelompok_pilihan: 'sem7' },
 
     // ===== SEMESTER 8 =====
     { kode: 'TIKB821', nama: 'Interaksi Manusia dan Komputer', sks: 4, semester: 8, jenis: 'TIKB', is_pilihan: false, kelompok_pilihan: null },

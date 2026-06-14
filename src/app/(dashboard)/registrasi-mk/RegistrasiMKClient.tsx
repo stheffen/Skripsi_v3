@@ -25,7 +25,7 @@ function NilaiSelector({ mkId, currentNilai, onChange }: any) {
           className={`w-9 h-9 rounded-lg text-xs font-bold border transition-all duration-150 ${
             currentNilai === n
               ? `${NILAI_COLORS[n]} scale-110 shadow-lg`
-              : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-500 hover:text-slate-300"
+              : "bg-white text-slate-500 border-slate-200 hover:border-slate-400 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-slate-500 dark:hover:text-slate-300"
           }`}
         >
           {n}
@@ -41,9 +41,21 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   
   // Semua MK diflatten untuk mempermudah Modal
   const allMKs = Object.values(mkPerSemester).flat();
-  const semesterList = [1, 2, 3, 4, 5, 6, 7, 8]; // Fixed 8 semester untuk UI KRS
+  
+  const [extraSemesters, setExtraSemesters] = useState<number[]>(() => {
+    const maxSem = Math.max(8, user.semester_aktif || 1, ...Object.keys(mkPerSemester).map(Number));
+    if (maxSem > 8) return Array.from({length: maxSem - 8}, (_, i) => 9 + i);
+    return [];
+  });
+  const semesterList = [1, 2, 3, 4, 5, 6, 7, 8, ...extraSemesters];
 
   const [activeSem, setActiveSem] = useState(user.semester_aktif || 1);
+  
+  const handleAddSemester = () => {
+    const nextSem = semesterList[semesterList.length - 1] + 1;
+    setExtraSemesters([...extraSemesters, nextSem]);
+    setActiveSem(nextSem);
+  };
   
   // MK yang sudah terdaftar di semester aktif
   const currentKRS = (mkPerSemester[activeSem] || []).filter((mk: any) => mk.sudah_registrasi);
@@ -153,12 +165,12 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Registrasi KRS</h1>
-        <p className="text-slate-400 text-sm mt-1">Kelola mata kuliah dan nilai untuk setiap semester</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Registrasi KRS</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Kelola mata kuliah dan nilai untuk setiap semester</p>
       </div>
 
       {/* Semester Tabs */}
-      <div className="flex gap-2 flex-wrap bg-slate-900 p-2 rounded-2xl border border-slate-800">
+      <div className="flex gap-2 flex-wrap bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         {semesterList.map((s) => {
           const mks = mkPerSemester[s] || [];
           const regCount = mks.filter((m: any) => m.sudah_registrasi).length;
@@ -169,7 +181,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex-1 min-w-[70px] relative ${
                 activeSem === s
                   ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               Sem {s}
@@ -179,6 +191,13 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
             </button>
           );
         })}
+        <button
+          onClick={handleAddSemester}
+          className="px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex-1 min-w-[70px] bg-slate-100 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center justify-center gap-1"
+          title="Tambah Semester Baru"
+        >
+          <Plus size={16} /> Sem
+        </button>
       </div>
 
       {error && (
@@ -194,12 +213,12 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
       )}
 
       {/* Main KRS Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-800/30">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
           <div className="flex items-center gap-3">
-            <ClipboardList size={18} className="text-blue-400" />
-            <h3 className="font-semibold text-slate-200">KRS Semester {activeSem}</h3>
-            <span className="text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded-lg">
+            <ClipboardList size={18} className="text-blue-600 dark:text-blue-400" />
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200">KRS Semester {activeSem}</h3>
+            <span className="text-xs font-medium text-slate-600 bg-slate-200 dark:text-slate-400 dark:bg-slate-800 px-2 py-1 rounded-lg">
               {combinedList.length} MK
             </span>
           </div>
@@ -211,28 +230,28 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
           </button>
         </div>
 
-        <div className="divide-y divide-slate-800">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
           {combinedList.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center">
-              <BookOpen size={48} className="text-slate-700 mb-4" />
-              <p className="text-slate-300 font-medium mb-1">Belum ada mata kuliah</p>
+              <BookOpen size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+              <p className="text-slate-700 dark:text-slate-300 font-medium mb-1">Belum ada mata kuliah</p>
               <p className="text-slate-500 text-sm">Klik tombol "Tambah MK" untuk memasukkan mata kuliah ke KRS semester ini.</p>
             </div>
           ) : (
             combinedList.map((mk: any) => {
               const isDraft = draftMKs.some(d => d.id === mk.id);
               return (
-                <div key={mk.id} className={`flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 transition ${isDraft ? "bg-blue-500/5 border-l-2 border-blue-500" : "hover:bg-slate-800/30"}`}>
+                <div key={mk.id} className={`flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-4 transition ${isDraft ? "bg-blue-50 border-l-2 border-blue-500 dark:bg-blue-500/5" : "hover:bg-slate-50 dark:hover:bg-slate-800/30"}`}>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
-                      {isDraft && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Baru</span>}
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
+                      {isDraft && <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Baru</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-slate-500">{mk.kode}</span>
-                      <span className="text-slate-700">&bull;</span>
+                      <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                       <span className="text-xs text-slate-500">{mk.sks} SKS</span>
-                      <span className="text-slate-700">&bull;</span>
+                      <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                       <span className="text-xs text-slate-500">Bawaan Sem {mk.semester}</span>
                     </div>
                   </div>
@@ -271,22 +290,22 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
 
       {/* Modal Window Box */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-800/50">
-              <h2 className="text-lg font-bold text-slate-100">Tambah Mata Kuliah</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white transition">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Tambah Mata Kuliah</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">
                 <X size={24} />
               </button>
             </div>
             
-            <div className="p-4 border-b border-slate-800">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
               <input
                 type="text"
                 placeholder="Cari nama atau kode mata kuliah..."
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -296,20 +315,20 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
               ) : (
                 Object.keys(groupedModalMKs).map(Number).sort((a, b) => a - b).map(sem => (
                   <div key={sem} className="space-y-2">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1">Semester {sem}</h3>
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Semester {sem}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {groupedModalMKs[sem].map((mk: any) => {
                         const isSelected = !!selectedInModal[mk.id];
                         return (
-                          <label key={mk.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-blue-500/10 border-blue-500/30' : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600'}`}>
+                          <label key={mk.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-blue-50 border-blue-300 dark:bg-blue-500/10 dark:border-blue-500/30' : 'bg-white dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'}`}>
                             <input
                               type="checkbox"
                               checked={isSelected}
                               onChange={(e) => setSelectedInModal(prev => ({...prev, [mk.id]: e.target.checked}))}
-                              className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-800 accent-blue-500"
+                              className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 accent-blue-600 dark:accent-blue-500"
                             />
                             <div>
-                              <p className="text-sm font-medium text-slate-200">{mk.nama}</p>
+                              <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
                               <div className="flex gap-2 text-xs text-slate-500 mt-1">
                                 <span>{mk.kode}</span>
                                 <span>&bull;</span>
@@ -325,10 +344,10 @@ export default function RegistrasiMKClient({ user, mkPerSemester }: { user: any;
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end gap-3">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex justify-end gap-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
               >
                 Batal
               </button>

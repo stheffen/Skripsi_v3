@@ -21,12 +21,15 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
       where: { semester: semesterAktif + 1 }
     });
 
-    // Ambil angkatan mahasiswa untuk menentukan aturan fuzzy (9 vs 27)
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : null;
 
+    const totalSksLulus = await AkademikService.hitungTotalSKSLulus(userId);
+    const sisaSks = Math.max(0, 144 - totalSksLulus);
+
     // Fuzzy Mamdani processing (angkatan >= 2026 -> 9 aturan, else 27 aturan)
-    const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah, angkatan);
+    // Ditambahkan parameter semesterAktif dan sisaSks untuk penalti keterlambatan lulus
+    const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah, angkatan, semesterAktif, sisaSks);
 
     // Generate recommendation
     const rekomendasi = RekomendasiService.buat(

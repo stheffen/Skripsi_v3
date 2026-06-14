@@ -111,12 +111,14 @@ export function inferensi(
 
 // ========================================================
 // INFERENSI MAMDANI -- 9 ATURAN (Angkatan >= 2026)
-// Jika ada nilai D -> eskalasi output 1 level
+// Memasukkan Penalti Sisa Beban Studi (Mendekati Semester 8)
 // ========================================================
 export function inferensiBaru(
   muIPS: ReturnType<typeof fuzzifikasiIPS>,
   muIPK: ReturnType<typeof fuzzifikasiIPK>,
-  adaD: boolean
+  mkBermasalah: number,
+  semesterAktif: number,
+  sisaSks: number
 ) {
   const rules = [
     { ips: 'rendah', ipk: 'rendah', output: 'tinggi' },
@@ -130,10 +132,38 @@ export function inferensiBaru(
     { ips: 'tinggi', ipk: 'tinggi', output: 'rendah' },
   ] as const;
 
+  // Hitung Penalti Beban Studi
+  let penalty = 0;
+  
+  // Penalty 1: Mendekati/Melewati standar lulus (Semester 7+)
+  if (semesterAktif >= 8) penalty += 1.5;
+  else if (semesterAktif === 7) penalty += 1.0;
+  else if (semesterAktif === 6) penalty += 0.5;
+
+  // Penalty 2: Masih ada / banyak MK Bermasalah (D/E)
+  if (mkBermasalah >= 3) penalty += 1.0;
+  else if (mkBermasalah > 0) penalty += 0.5;
+
+  // Penalty 3: Sisa SKS masih banyak di semester atas
+  // Asumsi ideal: sisa = (8 - semesterAktif) * 18 SKS. Jika tertinggal jauh, penalti!
+  const idealSisa = Math.max(0, (8 - semesterAktif) * 18);
+  if (sisaSks > idealSisa + 18) penalty += 1.0; // Tertinggal lebih dari 1 semester
+  else if (sisaSks > idealSisa + 9) penalty += 0.5;
+
+  // Penalty 4: IPS Jelek di saat genting
+  if (semesterAktif >= 6 && muIPS.rendah > 0.4) penalty += 0.5;
+
   const eskalasi = (out: string): string => {
-    if (!adaD) return out;
-    if (out === 'rendah') return 'sedang';
-    return 'tinggi';
+    if (penalty >= 1.5) {
+      // Sangat berisiko molor
+      return 'tinggi';
+    }
+    if (penalty >= 0.5) {
+      if (out === 'rendah') return 'sedang';
+      if (out === 'sedang') return 'tinggi';
+      return 'tinggi';
+    }
+    return out;
   };
 
   let outputRendah = 0.0, outputSedang = 0.0, outputTinggi = 0.0;
@@ -143,7 +173,14 @@ export function inferensiBaru(
     const alpha = Math.min(muIPS[rule.ips], muIPK[rule.ipk]);
     const finalOutput = eskalasi(rule.output);
     if (alpha > 0) {
-      rulesAktif.push({ rule: idx + 1, ips: rule.ips, ipk: rule.ipk, mk: adaD ? 'ada_D (eskalasi)' : 'tidak_ada_D', output: finalOutput, alpha: Number(alpha.toFixed(4)) });
+      rulesAktif.push({ 
+        rule: idx + 1, 
+        ips: rule.ips, 
+        ipk: rule.ipk, 
+        info_penalti: `Penalti: ${penalty}`, 
+        output: finalOutput, 
+        alpha: Number(alpha.toFixed(4)) 
+      });
     }
     switch (finalOutput) {
       case 'rendah': outputRendah = Math.max(outputRendah, alpha); break;
@@ -152,7 +189,7 @@ export function inferensiBaru(
     }
   });
 
-  return { rendah: outputRendah, sedang: outputSedang, tinggi: outputTinggi, rules_aktif: rulesAktif };
+  return { rendah: outputRendah, sedang: outputSedang, tinggi: outputTinggi, rules_aktif: rulesAktif, penalty_score: penalty };
 }
 
 // ========================================================
@@ -189,9 +226,9 @@ export function klasifikasi(crispOutput: number): string {
 
 // ========================================================
 // PROSES LENGKAP FUZZY MAMDANI
-// angkatan >= 2026 -> 9 aturan; angkatan < 2026 -> 27 aturan
+// angkatan >= 2026 -> 9 aturan + penalti; angkatan < 2026 -> 27 aturan
 // ========================================================
-export function prosesFuzzy(ips: number, ipk: number, mkBermasalah: number, angkatan?: number | null) {
+export function prosesFuzzy(ips: number, ipk: number, mkBermasalah: number, angkatan?: number | null, semesterAktif: number = 1, sisaSks: number = 144) {
   const muIPS = fuzzifikasiIPS(ips);
   const muIPK = fuzzifikasiIPK(ipk);
 
@@ -203,7 +240,7 @@ export function prosesFuzzy(ips: number, ipk: number, mkBermasalah: number, angk
   const totalRules = gunakanAturanBaru ? 9 : 27;
 
   if (gunakanAturanBaru) {
-    output = inferensiBaru(muIPS, muIPK, mkBermasalah > 0);
+    output = inferensiBaru(muIPS, muIPK, mkBermasalah, semesterAktif, sisaSks);
   } else {
     const muMK = fuzzifikasiMKBermasalah(mkBermasalah);
     fuzzMK = muMK;
@@ -214,7 +251,7 @@ export function prosesFuzzy(ips: number, ipk: number, mkBermasalah: number, angk
   const kategori = klasifikasi(crispOutput);
 
   return {
-    input: { ips, ipk, mk_bermasalah: mkBermasalah },
+    input: { ips, ipk, mk_bermasalah: mkBermasalah, semester_aktif: semesterAktif, sisa_sks: sisaSks },
     fuzzifikasi: {
       ips: muIPS,
       ipk: muIPK,

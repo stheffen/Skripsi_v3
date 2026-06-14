@@ -74,12 +74,10 @@ export async function registrasiMK(
 
     if (existing) {
       // Update nilai saja jika sudah ada
-      if (nilai) {
-        await prisma.khs.update({
-          where: { id: existing.id },
-          data: { nilai, bobot_nilai: getBobot(nilai) },
-        });
-      }
+      await prisma.khs.update({
+        where: { id: existing.id },
+        data: { nilai: nilai || null, bobot_nilai: getBobot(nilai) },
+      });
       return { success: true, action: "updated" };
     }
 

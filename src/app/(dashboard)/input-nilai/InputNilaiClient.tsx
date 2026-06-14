@@ -64,7 +64,7 @@ export default function InputNilaiClient({ user }: { user: any }) {
       </div>
 
       <div className="flex gap-2 flex-wrap bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        {Array.from({ length: 14 }, (_, i) => i + 1).map(s => (
+        {Array.from({ length: Math.max(8, user?.semester_aktif || 8) }, (_, i) => i + 1).map(s => (
           <button
             key={s}
             onClick={() => setActiveSem(s)}
