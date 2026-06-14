@@ -33,17 +33,17 @@ function trapezoid(x: number, a: number, b: number, c: number, d: number): numbe
 
 export function fuzzifikasiIPS(ips: number) {
   return {
-    rendah: trapezoidRight(ips, 2.49, 2.50),
+    rendah: trapezoidLeft(ips, 1.99, 2.00),
     sedang: trapezoid(ips, 1.99, 2.00, 2.49, 2.50),
-    tinggi: trapezoidLeft(ips, 1.99, 2.00),
+    tinggi: trapezoidRight(ips, 2.49, 2.50),
   };
 }
 
 export function fuzzifikasiIPK(ipk: number) {
   return {
-    rendah: trapezoidRight(ipk, 2.49, 2.50),
+    rendah: trapezoidLeft(ipk, 1.99, 2.00),
     sedang: trapezoid(ipk, 1.99, 2.00, 2.49, 2.50),
-    tinggi: trapezoidLeft(ipk, 1.99, 2.00),
+    tinggi: trapezoidRight(ipk, 2.49, 2.50),
   };
 }
 

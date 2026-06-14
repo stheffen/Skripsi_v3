@@ -126,8 +126,8 @@ export async function batchRegistrasiMK(
  */
 export async function deleteRegistrasiMK(userId: number, mkId: number) {
   try {
-    await prisma.khs.delete({
-      where: { user_id_mata_kuliah_id: { user_id: userId, mata_kuliah_id: mkId } },
+    await prisma.khs.deleteMany({
+      where: { user_id: userId, mata_kuliah_id: mkId },
     });
     return { success: true };
   } catch (error: any) {
