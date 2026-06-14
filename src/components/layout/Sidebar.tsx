@@ -90,7 +90,7 @@ export default function Sidebar({
         {/* User info */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {user?.name?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <div className="min-w-0">
@@ -162,9 +162,12 @@ export default function Sidebar({
               <div className="w-12 h-12 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-500 rounded-full flex items-center justify-center mb-4">
                 <LogOut size={24} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Konfirmasi Keluar</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                Konfirmasi Keluar
+              </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                Apakah Anda yakin ingin keluar dari aplikasi? Sesi Anda akan diakhiri.
+                Apakah Anda yakin ingin keluar dari aplikasi? Sesi Anda akan
+                diakhiri.
               </p>
               <div className="flex gap-3 w-full">
                 <button

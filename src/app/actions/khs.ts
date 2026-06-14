@@ -75,6 +75,10 @@ export async function getCurriculumNilai(userId: number, semester: number) {
 
   const khsMap = new Map(khsList.map(k => [k.mata_kuliah_id, k]));
 
+  const wajib: any[] = [];
+  const pilihan: Record<string, any[]> = {};
+  const pindahan: any[] = []; // Menampung matkul pindahan/mengulang
+
   for (const khs of khsList) {
     const mk = khs.mata_kuliah;
     const isPilihan = mk.jenis === "Pilihan";
