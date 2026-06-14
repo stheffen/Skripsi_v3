@@ -97,19 +97,6 @@ export async function registrasiMK(
       },
     });
 
-    // Update semester_aktif jika perlu
-    if (nilai) {
-      const filledKhs = await prisma.khs.findMany({
-        where: { user_id: userId, nilai: { not: null } },
-        include: { mata_kuliah: { select: { semester: true } } },
-      });
-      const semSet = new Set(filledKhs.map((k: any) => k.semester_override ?? k.mata_kuliah.semester));
-      const maxSem = semSet.size > 0 ? Math.max(...Array.from(semSet)) : null;
-      if (maxSem) {
-        await prisma.user.update({ where: { id: userId }, data: { semester_aktif: maxSem } });
-      }
-    }
-
     return { success: true, action: "created" };
   } catch (error: any) {
     console.error(error);

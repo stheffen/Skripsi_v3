@@ -124,18 +124,7 @@ export async function batchUpdateKHS(userId: number, values: { khs_id: number; n
       });
     }
 
-    // Perbarui semester_aktif berdasarkan semester tertinggi yang sudah diisi
-    let newActiveSem = undefined;
-    const filledSemRes = await getFilledSemesters(userId);
-    if (filledSemRes.data && filledSemRes.data.length > 0) {
-      newActiveSem = Math.max(...filledSemRes.data);
-      await prisma.user.update({
-        where: { id: userId },
-        data: { semester_aktif: newActiveSem }
-      });
-    }
-
-    return { success: true, newActiveSem };
+    return { success: true };
   } catch (error: any) {
     console.error(error);
     return { error: error.message || "Gagal menyimpan nilai" };

@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import bcrypt from "bcryptjs";
+import { hitungSemesterAktif } from '@/lib/utils';
 
 export async function registerUser(formData: FormData) {
   try {
@@ -32,28 +33,10 @@ export async function registerUser(formData: FormData) {
     if (role === "mahasiswa") {
       data.nim = formData.get("nim") as string;
       data.angkatan = formData.get("angkatan") as string;
-      data.semester_aktif = parseInt(formData.get("semester_aktif") as string);
-      data.phone = formData.get("phone") as string;
+      data.semester_aktif = hitungSemesterAktif(data.angkatan);
     }
 
     const user = await prisma.user.create({ data });
-
-    // Generate KHS kosong if mahasiswa
-    if (user.role === 'mahasiswa') {
-      const allMk = await prisma.mataKuliah.findMany();
-      const khsData = allMk.map((mk: any) => ({
-        user_id: user.id,
-        mata_kuliah_id: mk.id,
-        semester_input: mk.semester,
-      }));
-      
-      // SQLite limit variables, insert in chunks
-      const chunkSize = 50;
-      for (let i = 0; i < khsData.length; i += chunkSize) {
-        const chunk = khsData.slice(i, i + chunkSize);
-        await prisma.khs.createMany({ data: chunk });
-      }
-    }
 
     return { success: true };
   } catch (error: any) {

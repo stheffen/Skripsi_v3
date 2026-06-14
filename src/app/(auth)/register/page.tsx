@@ -26,8 +26,6 @@ const registerSchema = z
     password_confirmation: z.string().min(1, "Konfirmasi password wajib diisi"),
     nim: z.string().optional(),
     angkatan: z.string().optional(),
-    semester_aktif: z.string().optional(),
-    phone: z.string().optional(),
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "Password tidak cocok",
@@ -69,8 +67,6 @@ export default function Register() {
       password_confirmation: "",
       nim: "",
       angkatan: "",
-      semester_aktif: "1",
-      phone: "",
     },
   });
 
@@ -223,33 +219,6 @@ export default function Register() {
                       {...register("angkatan")}
                       className="bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500"
                       placeholder="Contoh: 2022"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="semester_aktif" className="text-slate-300">
-                      Semester Aktif
-                    </Label>
-                    <select
-                      id="semester_aktif"
-                      {...register("semester_aktif")}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-md h-9 px-3 text-sm text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    >
-                      {Array.from({ length: 14 }, (_, i) => i + 1).map((s) => (
-                        <option key={s} value={String(s)}>
-                          Semester {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-slate-300">
-                      No. HP (opsional)
-                    </Label>
-                    <Input
-                      id="phone"
-                      {...register("phone")}
-                      className="bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500"
-                      placeholder="08xxxxxxxxxx"
                     />
                   </div>
                 </>
