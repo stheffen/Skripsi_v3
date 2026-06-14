@@ -12,7 +12,7 @@ export default async function DosenDashboardPage() {
     redirect("/login");
   }
 
-  const res = await getDosenDashboard(parseInt(user.id));
+  const res = await getDosenDashboard(parseInt(session.user.id));
   const data = res.data || { total_mahasiswa: 0, risiko_tinggi: 0, risiko_sedang: 0, risiko_rendah: 0, total_mk_bermasalah: 0 };
 
   return (
