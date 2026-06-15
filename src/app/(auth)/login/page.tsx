@@ -225,37 +225,6 @@ export default function Login() {
               </Button>
             </form>
 
-            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">
-                Akses Demonstrasi
-              </p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-500 mb-1">Mahasiswa</p>
-                  <p
-                    className="font-medium text-slate-900 dark:text-white truncate"
-                    title="demo@gmail.com"
-                  >
-                    demo@gmail.com
-                  </p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-500 mb-1">Dosen Wali</p>
-                  <p
-                    className="font-medium text-slate-900 dark:text-white truncate"
-                    title="demodosen@gmail.com"
-                  >
-                    demodosen@gmail.
-                  </p>
-                </div>
-              </div>
-              <p className="text-center text-xs text-slate-500 mt-3">
-                Sandi umum:{" "}
-                <strong className="text-slate-700 dark:text-slate-300">
-                  demo1234
-                </strong>
-              </p>
-            </div>
           </div>
 
           <p className="text-center text-sm text-slate-500 mt-8">
