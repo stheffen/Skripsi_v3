@@ -179,7 +179,6 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showRules, setShowRules] = useState(false);
-  const [showKonsekuensi, setShowKonsekuensi] = useState(false);
 
   const semesterOptions = Array.from({ length: maxSemester }, (_, i) => i + 1);
 
@@ -366,39 +365,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
             <MKBelumDiambilTable mkList={mkBelumDiambil} />
           </div>
 
-          {/* Konsekuensi */}
-          {(result.kategori === "Tinggi" || result.kategori === "Sedang") && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
-              <button
-                onClick={() => setShowKonsekuensi(!showKonsekuensi)}
-                className={`w-full flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-l-4 ${result.kategori === "Tinggi" ? "border-l-risk-tinggi" : "border-l-risk-sedang"}`}
-              >
-                <div className="flex items-center gap-3">
-                  <TriangleAlert size={18} className={result.kategori === "Tinggi" ? "text-risk-tinggi" : "text-risk-sedang"} />
-                  <span className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Apa yang Terjadi Jika Dibiarkan?</span>
-                </div>
-                {showKonsekuensi ? <ChevronUp size={18} className="text-slate-500" /> : <ChevronDown size={18} className="text-slate-500" />}
-              </button>
-              {showKonsekuensi && (
-                <div className={`p-5 border-t border-slate-200 dark:border-slate-800 ${result.kategori === "Tinggi" ? "bg-red-50 dark:bg-red-500/5" : "bg-orange-50 dark:bg-amber-500/5"}`}>
-                  {result.kategori === "Tinggi" ? (
-                    <div className="space-y-3 text-sm text-slate-800 dark:text-slate-300">
-                      <p>- Risiko <strong className="text-red-600 dark:text-red-400">Drop Out (DO)</strong> meningkat jika IPK terus di bawah 2.0 hingga evaluasi akademik.</p>
-                      <p>- Mata kuliah dengan nilai D/E <strong>harus diulang</strong>, menambah beban studi di semester mendatang.</p>
-                      <p>- Prasyarat MK di semester atas tidak terpenuhi - berpotensi <strong>menunda kelulusan 1-2 semester</strong>.</p>
-                      <p>- IPK rendah dapat menghambat akses ke program magang, beasiswa, dan peluang karir.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3 text-sm text-slate-800 dark:text-slate-300">
-                      <p>- Risiko bisa <strong className="text-red-600 dark:text-red-400">meningkat ke Tinggi</strong> jika performa tidak membaik semester berikutnya.</p>
-                      <p>- MK bermasalah yang tidak diperbaiki akan terus <strong>menurunkan IPK kumulatif</strong>.</p>
-                      <p>- Perbaikan yang terlambat berpotensi <strong>memperlambat kelulusan</strong>.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+
 
           {/* Rules Aktif */}
           {fuzzyDetail?.rules_aktif?.length > 0 && (

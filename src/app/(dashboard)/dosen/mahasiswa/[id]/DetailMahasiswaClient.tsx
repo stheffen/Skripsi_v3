@@ -291,14 +291,7 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
                   )}
                 </div>
 
-                {/* 2. Rekomendasi Sistem */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 text-sm flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 bg-amber-500 dark:bg-amber-400 rounded-full" />
-                    Rekomendasi Analisis Terakhir
-                  </h3>
-                  <RekomendasiDisplay text={initialData.rekomendasi} />
-                </div>
+
               </>
             )}
 
