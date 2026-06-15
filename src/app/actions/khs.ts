@@ -19,7 +19,6 @@ export async function getSemesterKHS(userId: number, semester: number) {
 
   const wajib: any[] = [];
   const pilihan: Record<string, any[]> = {};
-  const pindahan: any[] = [];
 
   for (const khs of allKhs) {
     const mk = khs.mata_kuliah;
@@ -42,12 +41,9 @@ export async function getSemesterKHS(userId: number, semester: number) {
       semester_efektif: semEfektif,
       nilai: khs.nilai,
       bobot_nilai: khs.bobot_nilai,
-      is_pindahan: khs.semester_override !== null,
     };
 
-    if (data.is_pindahan) {
-      pindahan.push(data);
-    } else if (isPilihan) {
+    if (isPilihan) {
       // Kelompokkan MK pilihan yang ada di semester ini
       const groupKey = `Pilihan_Sem_${semester}`; // Sederhananya, dikelompokkan per semester
       if (!pilihan[groupKey]) pilihan[groupKey] = [];
@@ -57,7 +53,7 @@ export async function getSemesterKHS(userId: number, semester: number) {
     }
   }
 
-  return { wajib, pilihan, pindahan };
+  return { wajib, pilihan };
 }
 
 export async function getCurriculumNilai(userId: number, semester: number) {
@@ -74,7 +70,6 @@ export async function getCurriculumNilai(userId: number, semester: number) {
 
   const wajib: any[] = [];
   const pilihan: Record<string, any[]> = {};
-  const pindahan: any[] = []; // Menampung matkul pindahan/mengulang
 
   for (const khs of khsList) {
     const mk = khs.mata_kuliah;
@@ -92,12 +87,9 @@ export async function getCurriculumNilai(userId: number, semester: number) {
       semester_efektif: semester,
       nilai: khs.nilai,
       bobot_nilai: khs.bobot_nilai,
-      is_pindahan: khs.semester_override !== null && khs.semester_override !== mk.semester,
     };
 
-    if (data.is_pindahan) {
-      pindahan.push(data);
-    } else if (isPilihan) {
+    if (isPilihan) {
       const groupKey = `Pilihan_Sem_${semester}`; 
       if (!pilihan[groupKey]) pilihan[groupKey] = [];
       pilihan[groupKey].push(data);
@@ -106,7 +98,7 @@ export async function getCurriculumNilai(userId: number, semester: number) {
     }
   }
 
-  return { wajib, pilihan, pindahan };
+  return { wajib, pilihan };
 }
 
 export async function batchUpdateKHS(userId: number, values: { khs_id: number; nilai: string }[]) {

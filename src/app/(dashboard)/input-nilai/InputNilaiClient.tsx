@@ -98,18 +98,6 @@ export default function InputNilaiClient({ user, filledSemesters }: { user: any,
             </div>
           </div>
 
-          {semData.pindahan?.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-              <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800 bg-purple-50 dark:bg-purple-500/5">
-                <FolderOpen size={18} className="text-purple-600 dark:text-purple-400" />
-                <h3 className="font-semibold text-slate-900 dark:text-slate-200">Mata Kuliah Pindahan</h3>
-              </div>
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                {semData.pindahan?.map((item: any) => <MKRowReadonly key={item.mk_id} item={item} />)}
-              </div>
-            </div>
-          )}
-
           {Object.entries(semData.pilihan || {}).map(([kelompok, mks]: any) => (
             mks.length > 0 ? (
               <div key={kelompok} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
