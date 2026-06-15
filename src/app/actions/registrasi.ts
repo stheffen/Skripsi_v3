@@ -33,8 +33,8 @@ export async function getMKPerSemesterUntukRegistrasi(userId: number) {
       const khs = existingMap.get(mk.id) as any;
       const semEfektif = khs?.semester_override ?? mk.semester;
 
-      if (!grouped[mk.semester]) grouped[mk.semester] = [];
-      grouped[mk.semester].push({
+      if (!grouped[semEfektif]) grouped[semEfektif] = [];
+      grouped[semEfektif].push({
         id: mk.id,
         kode: mk.kode,
         nama: mk.nama,

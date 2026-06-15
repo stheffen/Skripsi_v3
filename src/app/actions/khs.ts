@@ -65,11 +65,7 @@ export async function getCurriculumNilai(userId: number, semester: number) {
   const khsList = await prisma.khs.findMany({
     where: { 
       user_id: userId,
-      // Cek yang asli dari semester ini ATAU yang di-override ke semester ini
-      OR: [
-        { mata_kuliah: { semester: semester }, semester_override: null },
-        { semester_override: semester }
-      ]
+      mata_kuliah: { semester: semester }
     },
     include: { mata_kuliah: true }
   });
@@ -150,8 +146,7 @@ export async function getFilledSemesters(userId: number) {
     for (let i = 1; i <= maxSemester; i++) semSet.add(i);
 
     for (const khs of allKhs) {
-      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
-      semSet.add(semEfektif);
+      semSet.add(khs.mata_kuliah.semester);
     }
     
     return { data: Array.from(semSet).sort((a, b) => a - b) };
