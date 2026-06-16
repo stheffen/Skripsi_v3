@@ -15,18 +15,29 @@ export const MATA_KULIAH_BERBINTANG = [
 ];
 
 export class AkademikService {
-  /**
-   * Hitung IPS untuk semester tertentu.
-   */
+  private static deduplicateKhsList(khsList: any[]) {
+    const map = new Map<number, any>();
+    for (const khs of khsList) {
+      const existing = map.get(khs.mata_kuliah_id);
+      if (!existing) {
+        map.set(khs.mata_kuliah_id, khs);
+      } else {
+        const currentBobot = khs.bobot_nilai ?? -1;
+        const existingBobot = existing.bobot_nilai ?? -1;
+        if (currentBobot > existingBobot) {
+          map.set(khs.mata_kuliah_id, khs);
+        } else if (currentBobot === existingBobot && khs.id > existing.id) {
+          map.set(khs.mata_kuliah_id, khs);
+        }
+      }
+    }
+    return Array.from(map.values());
+  }
+
   static async hitungIPS(userId: number, semester: number): Promise<number> {
     const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { not: null },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
 
     const khsFiltered = khsList.filter((khs: any) => {
@@ -49,19 +60,13 @@ export class AkademikService {
     return Number((totalBobot / totalSks).toFixed(2));
   }
 
-  /**
-   * Hitung IPK kumulatif (semua semester yang sudah diisi)
-   */
   static async hitungIPK(userId: number): Promise<number> {
-    const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { not: null },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+    const khsListRaw = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
+
+    const khsList = this.deduplicateKhsList(khsListRaw);
 
     if (khsList.length === 0) return 0.0;
 
@@ -82,20 +87,17 @@ export class AkademikService {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
     
-    const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { in: ['D', 'E'] },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+    const khsListRaw = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { in: ['A', 'B', 'C', 'D', 'E'] } },
+      include: { mata_kuliah: true },
     });
+
+    const khsListAll = this.deduplicateKhsList(khsListRaw);
+    const khsList = khsListAll.filter(k => ['D', 'E'].includes(k.nilai));
 
     let dCountReguler = 0;
     let bermasalahCount = 0;
 
-    // Sort KHS so that 'E' and Starred Courses are prioritized
     khsList.sort((a: any, b: any) => {
       if (a.nilai === 'E' && b.nilai !== 'E') return -1;
       if (a.nilai !== 'E' && b.nilai === 'E') return 1;
@@ -132,19 +134,14 @@ export class AkademikService {
     return bermasalahCount;
   }
 
-  /**
-   * Kembalikan SELURUH detail MK bermasalah (D/E) untuk UI (tanpa memotong kuota)
-   */
   static async getMKBermasalahDetail(userId: number) {
-    const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { in: ['D', 'E'] },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+    const khsListRaw = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { in: ['A', 'B', 'C', 'D', 'E'] } },
+      include: { mata_kuliah: true },
     });
+
+    const khsListAll = this.deduplicateKhsList(khsListRaw);
+    const khsList = khsListAll.filter(k => ['D', 'E'].includes(k.nilai));
 
     const bermasalahList: any[] = [];
 
@@ -162,7 +159,6 @@ export class AkademikService {
 
     const result = bermasalahList;
 
-    // Urutkan: E dulu, lalu D; dan SKS besar dulu
     result.sort((a: any, b: any) => {
       const bobotA = a.nilai === 'E' ? 0 : 1;
       const bobotB = b.nilai === 'E' ? 0 : 1;
@@ -173,52 +169,29 @@ export class AkademikService {
     return result;
   }
 
-  /**
-   * Hitung total SKS yang sudah ditempuh (ada nilainya)
-   */
   static async hitungTotalSKSTempuh(userId: number): Promise<number> {
-    const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { not: null },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+    const khsListRaw = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
-
+    const khsList = this.deduplicateKhsList(khsListRaw);
     return khsList.reduce((acc: any, khs: any) => acc + khs.mata_kuliah.sks, 0);
   }
 
-  /**
-   * Hitung total SKS yang lulus (nilai A/B/C)
-   */
   static async hitungTotalSKSLulus(userId: number): Promise<number> {
-    const khsList = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { in: ['A', 'B', 'C'] },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+    const khsListRaw = await prisma.khs.findMany({
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
-
+    const khsListAll = this.deduplicateKhsList(khsListRaw);
+    const khsList = khsListAll.filter(k => ['A', 'B', 'C'].includes(k.nilai));
     return khsList.reduce((acc: any, khs: any) => acc + khs.mata_kuliah.sks, 0);
   }
 
-  /**
-   * Statistik ringkasan per semester.
-   */
   static async statistikPerSemester(userId: number) {
     const allKhs = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { not: null },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
 
     const result: Record<number, any> = {};
@@ -253,48 +226,66 @@ export class AkademikService {
     return Object.values(result);
   }
 
-  /**
-   * Mengambil SELURUH data akademik (IPK, IPS, MK Bermasalah, Statistik)
-   * hanya dalam 1 KALI eksekusi database. Mengatasi N+1 Query.
-   */
   static async getAkademikSummary(userId: number, semesterAktif: number) {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
     
     const allKhs = await prisma.khs.findMany({
-      where: {
-        user_id: userId,
-        nilai: { not: null },
-      },
-      include: {
-        mata_kuliah: true,
-      },
+      where: { user_id: userId, nilai: { not: null } },
+      include: { mata_kuliah: true },
     });
 
-    let totalBobotKumulatif = 0;
-    let totalSksKumulatif = 0;
-    
     let totalBobotSemester = 0;
     let totalSksSemester = 0;
+    const semStats: Record<number, any> = {};
+
+    // 1. Hitung IPS & Statistik Per Semester (Menggunakan ALL KHS, tanpa deduplikasi)
+    for (const khs of allKhs) {
+      const sks = khs.mata_kuliah.sks;
+      const bobot = khs.bobot_nilai ?? 0;
+      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
+      
+      let isBermasalah = ['D', 'E'].includes(khs.nilai!);
+
+      if (semEfektif === semesterAktif) {
+        totalBobotSemester += bobot * sks;
+        totalSksSemester += sks;
+      }
+
+      if (!semStats[semEfektif]) {
+        semStats[semEfektif] = {
+          semester: semEfektif,
+          totalBobot: 0,
+          totalSks: 0,
+          mk_bermasalah: 0,
+          total_mk: 0,
+        };
+      }
+      semStats[semEfektif].totalBobot += bobot * sks;
+      semStats[semEfektif].totalSks += sks;
+      if (isBermasalah) semStats[semEfektif].mk_bermasalah++;
+      semStats[semEfektif].total_mk++;
+    }
+
+    // 2. Hitung IPK, SKS Lulus, dan MK Bermasalah (Menggunakan Deduplicated KHS)
+    const deduplicatedKhs = this.deduplicateKhsList(allKhs);
     
+    let totalBobotKumulatif = 0;
+    let totalSksKumulatif = 0;
     let mkBermasalahCount = 0;
     let totalSksLulus = 0;
     let dCountReguler = 0;
     let totalMkDE = 0;
-    
-    const semStats: Record<number, any> = {};
 
-    // Sort to process E and Starred courses first for deterministic D quota usage
-    allKhs.sort((a: any, b: any) => {
+    deduplicatedKhs.sort((a: any, b: any) => {
       if (a.nilai === 'E' && b.nilai !== 'E') return -1;
       if (a.nilai !== 'E' && b.nilai === 'E') return 1;
       return 0;
     });
 
-    for (const khs of allKhs) {
+    for (const khs of deduplicatedKhs) {
       const sks = khs.mata_kuliah.sks;
       const bobot = khs.bobot_nilai ?? 0;
-      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
       
       const isBintang = MATA_KULIAH_BERBINTANG.includes(khs.mata_kuliah.kode);
       let isLulus = false;
@@ -314,39 +305,18 @@ export class AkademikService {
         } else {
           if (dCountReguler < 2) {
             dCountReguler++;
-            isLulus = true; // D is passed if within quota
+            isLulus = true; 
           } else {
             isBermasalah = true;
           }
         }
       }
 
-      // Kumulatif (IPK, SKS Tempuh)
       totalBobotKumulatif += bobot * sks;
       totalSksKumulatif += sks;
       
-      // IPS & SKS Lulus & Bermasalah
-      if (semEfektif === semesterAktif) {
-        totalBobotSemester += bobot * sks;
-        totalSksSemester += sks;
-      }
       if (isLulus) totalSksLulus += sks;
       if (isBermasalah) mkBermasalahCount++;
-
-      // Statistik Per Semester
-      if (!semStats[semEfektif]) {
-        semStats[semEfektif] = {
-          semester: semEfektif,
-          totalBobot: 0,
-          totalSks: 0,
-          mk_bermasalah: 0,
-          total_mk: 0,
-        };
-      }
-      semStats[semEfektif].totalBobot += bobot * sks;
-      semStats[semEfektif].totalSks += sks;
-      if (isBermasalah) semStats[semEfektif].mk_bermasalah++;
-      semStats[semEfektif].total_mk++;
     }
 
     const statistik_semester = Object.values(semStats).map((stat: any) => ({

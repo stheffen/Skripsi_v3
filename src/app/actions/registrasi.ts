@@ -25,29 +25,56 @@ export async function getMKPerSemesterUntukRegistrasi(userId: number) {
       include: { mata_kuliah: true },
     });
 
-    const existingMap = new Map(existingKhs.map((k: any) => [k.mata_kuliah_id, k]));
-
-    // Group per semester
     const grouped: Record<number, any[]> = {};
-    for (const mk of semuaMK) {
-      const khs = existingMap.get(mk.id) as any;
-      const semEfektif = khs?.semester_override ?? mk.semester;
 
-      if (!grouped[semEfektif]) grouped[semEfektif] = [];
-      grouped[semEfektif].push({
-        id: mk.id,
-        kode: mk.kode,
-        nama: mk.nama,
-        sks: mk.sks,
-        semester: mk.semester,
-        jenis: mk.jenis,
-        is_pilihan: mk.is_pilihan,
-        kelompok_pilihan: mk.kelompok_pilihan,
-        // Status registrasi
-        khs_id: khs?.id ?? null,
-        nilai: khs?.nilai ?? null,
-        sudah_registrasi: !!khs,
-      });
+    // Map KHS by mata_kuliah_id so we know all attempts
+    const khsByMkId = new Map<number, any[]>();
+    for (const khs of existingKhs) {
+      if (!khsByMkId.has(khs.mata_kuliah_id)) {
+        khsByMkId.set(khs.mata_kuliah_id, []);
+      }
+      khsByMkId.get(khs.mata_kuliah_id)!.push(khs);
+    }
+
+    for (const mk of semuaMK) {
+      const attempts = khsByMkId.get(mk.id) || [];
+      
+      if (attempts.length === 0) {
+        // Not taken yet, show in default semester
+        if (!grouped[mk.semester]) grouped[mk.semester] = [];
+        grouped[mk.semester].push({
+          id: mk.id,
+          kode: mk.kode,
+          nama: mk.nama,
+          sks: mk.sks,
+          semester: mk.semester,
+          jenis: mk.jenis,
+          is_pilihan: mk.is_pilihan,
+          kelompok_pilihan: mk.kelompok_pilihan,
+          khs_id: null,
+          nilai: null,
+          sudah_registrasi: false,
+        });
+      } else {
+        // Taken one or more times
+        for (const khs of attempts) {
+          const semEfektif = khs.semester_override ?? mk.semester;
+          if (!grouped[semEfektif]) grouped[semEfektif] = [];
+          grouped[semEfektif].push({
+            id: mk.id,
+            kode: mk.kode,
+            nama: mk.nama,
+            sks: mk.sks,
+            semester: mk.semester,
+            jenis: mk.jenis,
+            is_pilihan: mk.is_pilihan,
+            kelompok_pilihan: mk.kelompok_pilihan,
+            khs_id: khs.id,
+            nilai: khs.nilai ?? null,
+            sudah_registrasi: true,
+          });
+        }
+      }
     }
 
     return { data: grouped };
@@ -68,8 +95,8 @@ export async function registrasiMK(
 ) {
   try {
     // Cek apakah sudah ada
-    const existing = await prisma.khs.findUnique({
-      where: { user_id_mata_kuliah_id: { user_id: userId, mata_kuliah_id: mkId } },
+    const existing = await prisma.khs.findFirst({
+      where: { user_id: userId, mata_kuliah_id: mkId, semester_override: semesterInput },
     });
 
     if (existing) {
@@ -124,10 +151,10 @@ export async function batchRegistrasiMK(
 /**
  * Hapus MK dari KRS (Hapus dari KHS)
  */
-export async function deleteRegistrasiMK(userId: number, mkId: number) {
+export async function deleteRegistrasiMK(userId: number, mkId: number, semesterInput: number) {
   try {
     await prisma.khs.deleteMany({
-      where: { user_id: userId, mata_kuliah_id: mkId },
+      where: { user_id: userId, mata_kuliah_id: mkId, semester_override: semesterInput },
     });
     return { success: true };
   } catch (error: any) {

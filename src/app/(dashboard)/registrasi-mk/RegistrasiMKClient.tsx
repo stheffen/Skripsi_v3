@@ -125,7 +125,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   const handleDeleteKRS = (mkId: number) => {
     if (!confirm("Yakin ingin menghapus mata kuliah ini dari KRS?")) return;
     startTransition(async () => {
-      const res = await deleteRegistrasiMK(parseInt(user.id), mkId);
+      const res = await deleteRegistrasiMK(parseInt(user.id), mkId, activeSem);
       if (res.error) setError(res.error);
       else router.refresh();
     });
@@ -195,15 +195,26 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
     
     // Check if user passed ALL prerequisites (Nilai A, B, C, or D)
     return reqs.every(reqKode => {
-      const course = allMKs.find(m => m.kode === reqKode);
-      if (!course || !course.sudah_registrasi || !course.nilai) return false;
-      return ['A', 'B', 'C', 'D'].includes(course.nilai);
+      const attempts = allMKs.filter((m: any) => m.kode === reqKode);
+      return attempts.some((a: any) => a.sudah_registrasi && a.nilai && ['A', 'B', 'C', 'D'].includes(a.nilai));
     });
   };
 
+  // We need unique courses to display in the modal
+  const uniqueMKMap = new Map();
+  allMKs.forEach((mk: any) => {
+    if (!uniqueMKMap.has(mk.kode)) {
+      uniqueMKMap.set(mk.kode, { ...mk, all_attempts: [mk] });
+    } else {
+      uniqueMKMap.get(mk.kode).all_attempts.push(mk);
+    }
+  });
+
+  const uniqueMKs = Array.from(uniqueMKMap.values());
+
   // MK yang bisa dipilih di modal = Belum registrasi atau (sudah registrasi tapi nilai D/E DAN BUKAN di semester aktif)
   // dan belum ada di draft
-  const availableMKs = allMKs.filter(mk => {
+  const availableMKs = uniqueMKs.filter((mk: any) => {
     // 1. Aturan Ganjil/Genap
     const isActiveSemGanjil = activeSem % 2 !== 0;
     const isCurriculumGanjil = mk.semester % 2 !== 0;
@@ -213,11 +224,11 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
     if (!isPrerequisitePassed(mk.kode)) return false;
 
     // 3. Status Pengambilan
-    const isBelumDiambil = !mk.sudah_registrasi;
-    // Bisa diulang/dipindah asalkan tidak sedang berada di semester aktif ini
-    const isRetakeable = mk.sudah_registrasi && !currentKRS.find((c: any) => c.id === mk.id);
-    const isNotInDraft = !draftMKs.find(d => d.id === mk.id);
-    return (isBelumDiambil || isRetakeable) && isNotInDraft;
+    const isRegisteredInActiveSem = mk.all_attempts.some((a: any) => a.sudah_registrasi && currentKRS.find((c: any) => c.id === a.id));
+    if (isRegisteredInActiveSem) return false; // Already in current semester
+
+    const isNotInDraft = !draftMKs.find(d => d.kode === mk.kode);
+    return isNotInDraft;
   });
 
   const filteredModalMKs = availableMKs.filter(mk => 
@@ -416,9 +427,9 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
-                                {mk.sudah_registrasi && (
+                                {mk.all_attempts.some((a: any) => a.sudah_registrasi) && (
                                   <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                                    {mk.nilai ? `Nilai ${mk.nilai} (Bisa Diulang)` : 'Pindah Semester'}
+                                    Bisa Diulang
                                   </span>
                                 )}
                               </div>

@@ -10,12 +10,35 @@ const getBobot = (nilai: string | null) => {
   return map[nilai.toUpperCase()] ?? null;
 };
 
+// Helper untuk memilih nilai tertinggi jika ada retake
+function deduplicateKhsList(khsList: any[]) {
+  const map = new Map<number, any>();
+  for (const khs of khsList) {
+    const existing = map.get(khs.mata_kuliah_id);
+    if (!existing) {
+      map.set(khs.mata_kuliah_id, khs);
+    } else {
+      const currentBobot = khs.bobot_nilai ?? -1;
+      const existingBobot = existing.bobot_nilai ?? -1;
+      if (currentBobot > existingBobot) {
+        map.set(khs.mata_kuliah_id, khs);
+      } else if (currentBobot === existingBobot && khs.id > existing.id) {
+        // Jika nilai sama, ambil attempt terbaru
+        map.set(khs.mata_kuliah_id, khs);
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
 export async function getSemesterKHS(userId: number, semester: number) {
   // Ambil semua KHS user ini untuk melihat yang pindahan
-  const allKhs = await prisma.khs.findMany({
+  const allKhsRaw = await prisma.khs.findMany({
     where: { user_id: userId },
     include: { mata_kuliah: true },
   });
+
+  const allKhs = deduplicateKhsList(allKhsRaw);
 
   const wajib: any[] = [];
   const pilihan: Record<string, any[]> = {};
@@ -25,9 +48,8 @@ export async function getSemesterKHS(userId: number, semester: number) {
     const isPilihan = mk.jenis === "Pilihan";
     
     const semAsli = mk.semester;
-    const semEfektif = khs.semester_override ?? semAsli;
 
-    if (semEfektif !== semester) continue;
+    if (semAsli !== semester) continue;
 
     const data = {
       khs_id: khs.id,
@@ -58,7 +80,7 @@ export async function getSemesterKHS(userId: number, semester: number) {
 
 export async function getCurriculumNilai(userId: number, semester: number) {
   // Ambil KHS user untuk melihat matkul apa yang SUDAH diregistrasikan di semester ini
-  const khsList = await prisma.khs.findMany({
+  const khsListRaw = await prisma.khs.findMany({
     where: { 
       user_id: userId,
       mata_kuliah: { semester: semester }
@@ -66,7 +88,7 @@ export async function getCurriculumNilai(userId: number, semester: number) {
     include: { mata_kuliah: true }
   });
 
-  const khsMap = new Map(khsList.map(k => [k.mata_kuliah_id, k]));
+  const khsList = deduplicateKhsList(khsListRaw);
 
   const wajib: any[] = [];
   const pilihan: Record<string, any[]> = {};
