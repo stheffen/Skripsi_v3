@@ -77,7 +77,7 @@ export default function Sidebar({
             <GraduationCap className="text-white" size={20} />
           </div>
           <span className="text-slate-900 dark:text-white font-bold text-lg tracking-tight">
-            Stheffen<span className="text-blue-500">App</span>
+            EWS
           </span>
           <button
             onClick={onClose}
