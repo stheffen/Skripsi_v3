@@ -71,8 +71,7 @@ export default function Login() {
           </div>
 
           <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
-            Stheffen
-            <span className="text-blue-600 dark:text-blue-500">App</span>
+            EWS
             <br />
             <span className="text-2xl text-slate-500 dark:text-slate-400 font-medium">
               Early Warning System
