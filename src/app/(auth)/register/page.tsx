@@ -109,33 +109,36 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 font-sans selection:bg-blue-500/30">
+      <div className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
-            <AlertTriangle size={20} className="text-white" />
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <AlertTriangle size={24} className="text-white" />
           </div>
           <div>
-            <p className="text-xs font-bold text-blue-400">EARLY WARNING</p>
-            <p className="text-xs text-slate-500">Risiko Akademik</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Akademik<span className="text-blue-600">Pro</span>
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Risiko Akademik & EWS</p>
           </div>
         </div>
 
-        <Card className="bg-slate-900 border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-slate-100 mb-1">Buat Akun</h2>
-          <p className="text-slate-400 text-sm mb-6">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/50">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Buat Akun</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
             Daftar untuk mengakses sistem
           </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
-              {error}
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+              <AlertTriangle size={18} className="shrink-0" />
+              <span className="font-medium">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <Label className="block text-slate-300 mb-2">
+              <Label className="block text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider mb-2">
                 Daftar Sebagai
               </Label>
               <div className="grid grid-cols-2 gap-2">
@@ -151,8 +154,8 @@ export default function Register() {
                     }
                     className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
                       selectedRole === val
-                        ? "bg-blue-600/20 border-blue-500 text-blue-300"
-                        : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600"
+                        ? "bg-blue-600/10 dark:bg-blue-600/20 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
                     }`}
                   >
                     {label}
@@ -162,70 +165,70 @@ export default function Register() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2 space-y-1.5">
-                <Label htmlFor="name" className="text-slate-300">
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="name" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                   Nama Lengkap
                 </Label>
                 <Input
                   id="name"
                   {...register("name")}
-                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.name ? "border-red-500" : ""}`}
+                  className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                   placeholder="Nama lengkap"
                 />
                 {errors.name && (
-                  <p className="text-xs text-red-500">{errors.name.message}</p>
+                  <p className="text-xs font-medium text-red-500">{errors.name.message}</p>
                 )}
               </div>
-              <div className="sm:col-span-2 space-y-1.5">
-                <Label htmlFor="email" className="text-slate-300">
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                   Email
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   {...register("email")}
-                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.email ? "border-red-500" : ""}`}
+                  className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                   placeholder="nama@email.com"
                 />
                 {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email.message}</p>
+                  <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
                 )}
               </div>
 
               {selectedRole === "mahasiswa" && (
                 <>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="nim" className="text-slate-300">
+                  <div className="space-y-2">
+                    <Label htmlFor="nim" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                       NIM
                     </Label>
                     <Input
                       id="nim"
                       {...register("nim")}
-                      className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.nim ? "border-red-500" : ""}`}
+                      className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.nim ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                       placeholder="Nomor Induk Mahasiswa"
                     />
                     {errors.nim && (
-                      <p className="text-xs text-red-500">
+                      <p className="text-xs font-medium text-red-500">
                         {errors.nim.message}
                       </p>
                     )}
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="angkatan" className="text-slate-300">
+                  <div className="space-y-2">
+                    <Label htmlFor="angkatan" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                       Angkatan
                     </Label>
                     <Input
                       id="angkatan"
                       {...register("angkatan")}
-                      className="bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500"
+                      className="h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all"
                       placeholder="Contoh: 2022"
                     />
                   </div>
                 </>
               )}
 
-              <div className="sm:col-span-2 space-y-1.5">
-                <Label htmlFor="password" className="text-slate-300">
+              <div className="sm:col-span-2 space-y-2">
+                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                   Password
                 </Label>
                 <div className="relative">
@@ -233,27 +236,27 @@ export default function Register() {
                     id="password"
                     type={showPass ? "text" : "password"}
                     {...register("password")}
-                    className={`bg-slate-950 border-slate-800 pr-12 text-slate-300 focus-visible:ring-blue-500 ${errors.password ? "border-red-500" : ""}`}
+                    className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 pr-12 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     placeholder="Minimal 8 karakter"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
                   >
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs font-medium text-red-500">
                     {errors.password.message}
                   </p>
                 )}
               </div>
-              <div className="sm:col-span-2 space-y-1.5">
+              <div className="sm:col-span-2 space-y-2">
                 <Label
                   htmlFor="password_confirmation"
-                  className="text-slate-300"
+                  className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider"
                 >
                   Konfirmasi Password
                 </Label>
@@ -261,11 +264,11 @@ export default function Register() {
                   id="password_confirmation"
                   type={showPass ? "text" : "password"}
                   {...register("password_confirmation")}
-                  className={`bg-slate-950 border-slate-800 text-slate-300 focus-visible:ring-blue-500 ${errors.password_confirmation ? "border-red-500" : ""}`}
+                  className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.password_confirmation ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                   placeholder="Ulangi password"
                 />
                 {errors.password_confirmation && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs font-medium text-red-500">
                     {errors.password_confirmation.message}
                   </p>
                 )}
@@ -275,7 +278,7 @@ export default function Register() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] mt-6 font-semibold text-base"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -287,11 +290,11 @@ export default function Register() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="text-center text-sm text-slate-500 mt-8">
             Sudah punya akun?{" "}
             <Link
               href="/login"
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
               Masuk di sini
             </Link>
