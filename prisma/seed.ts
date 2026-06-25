@@ -117,20 +117,22 @@ async function main() {
   const allMk = await prisma.mataKuliah.findMany()
   for (const mk of allMk) {
     if (mk.semester <= 3) { // just till semester 3
-      await prisma.khs.upsert({
+      const existingKhs = await prisma.khs.findFirst({
         where: {
-          user_id_mata_kuliah_id: {
-            user_id: mahasiswa.id,
-            mata_kuliah_id: mk.id,
-          }
-        },
-        update: {},
-        create: {
           user_id: mahasiswa.id,
           mata_kuliah_id: mk.id,
-          semester_input: mk.semester,
-        }
+        },
       })
+
+      if (!existingKhs) {
+        await prisma.khs.create({
+          data: {
+            user_id: mahasiswa.id,
+            mata_kuliah_id: mk.id,
+            semester_input: mk.semester,
+          },
+        })
+      }
     }
   }
 

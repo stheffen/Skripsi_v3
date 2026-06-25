@@ -48,8 +48,9 @@ export async function getSemesterKHS(userId: number, semester: number) {
     const isPilihan = mk.jenis === "Pilihan";
     
     const semAsli = mk.semester;
+    const semEfektif = khs.semester_override ?? semAsli;
 
-    if (semAsli !== semester) continue;
+    if (semEfektif !== semester) continue;
 
     const data = {
       khs_id: khs.id,

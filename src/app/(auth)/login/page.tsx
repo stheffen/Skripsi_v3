@@ -223,7 +223,6 @@ export default function Login() {
                 )}
               </Button>
             </form>
-
           </div>
 
           <p className="text-center text-sm text-slate-500 mt-8">
