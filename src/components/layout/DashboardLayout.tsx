@@ -5,6 +5,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import Link from 'next/link';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,9 +33,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name || 'Loading...'}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium capitalize">{user?.role === 'dosen' ? 'Dosen Pembimbing' : 'Mahasiswa'}</p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
-              {user?.name?.charAt(0)?.toUpperCase() || '?'}
-            </div>
+            <Link href={user?.role === 'dosen' ? '/dosen/profil' : '/profil'}>
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs hover:ring-2 hover:ring-blue-400 cursor-pointer transition-all">
+                {user?.name?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+            </Link>
           </div>
         </header>
 

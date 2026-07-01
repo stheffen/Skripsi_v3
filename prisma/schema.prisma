@@ -27,6 +27,7 @@ model User {
   dosenPembimbing    DosenMahasiswa[] @relation("DosenToMahasiswa")
   mahasiswaBimbingan DosenMahasiswa[] @relation("MahasiswaToDosen")
   
+  @@index([role])
   @@map("users")
 }
 
@@ -63,6 +64,8 @@ model Khs {
 
   @@index([user_id])
   @@index([mata_kuliah_id])
+  @@index([user_id, nilai])
+  @@index([user_id, mata_kuliah_id])
   @@map("khs")
 }
 
@@ -83,6 +86,8 @@ model AnalisisRisiko {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([user_id, semester])
   @@map("analisis_risiko")
 }
 
@@ -97,5 +102,7 @@ model DosenMahasiswa {
   mahasiswa User @relation("MahasiswaToDosen", fields: [mahasiswa_id], references: [id], onDelete: Cascade)
 
   @@unique([dosen_id, mahasiswa_id])
+  @@index([dosen_id])
+  @@index([mahasiswa_id])
   @@map("dosen_mahasiswa")
 }

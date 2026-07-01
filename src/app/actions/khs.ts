@@ -126,15 +126,18 @@ export async function getCurriculumNilai(userId: number, semester: number) {
 
 export async function batchUpdateKHS(userId: number, values: { khs_id: number; nilai: string }[]) {
   try {
-    for (const val of values) {
-      await prisma.khs.update({
-        where: { id: val.khs_id, user_id: userId }, // Ensure user owns it
-        data: {
-          nilai: val.nilai,
-          bobot_nilai: getBobot(val.nilai),
-        },
-      });
-    }
+    // OPTIMIZED: Was N sequential awaits — now runs all updates in parallel
+    await Promise.all(
+      values.map((val) =>
+        prisma.khs.update({
+          where: { id: val.khs_id, user_id: userId },
+          data: {
+            nilai: val.nilai,
+            bobot_nilai: getBobot(val.nilai),
+          },
+        })
+      )
+    );
 
     return { success: true };
   } catch (error: any) {

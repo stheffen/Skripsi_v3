@@ -133,15 +133,69 @@ export async function registrasiMK(
 
 /**
  * Batch registrasi + input nilai dari halaman Registrasi MK
+ * OPTIMIZED: Was 2N sequential DB round-trips — now 2 round-trips total:
+ *   1. Load all existing KHS for this user
+ *   2. Parallel creates + parallel updates via Promise.all
  */
 export async function batchRegistrasiMK(
   userId: number,
   entries: { mkId: number; nilai: string | null; semester: number }[]
 ) {
   try {
-    for (const e of entries) {
-      await registrasiMK(userId, e.mkId, e.nilai, e.semester);
+    // Step 1: Bulk-load all existing KHS for the affected MK IDs in one query
+    const mkIds = entries.map((e) => e.mkId);
+    const existingList = await prisma.khs.findMany({
+      where: { user_id: userId, mata_kuliah_id: { in: mkIds } },
+      select: { id: true, mata_kuliah_id: true, semester_override: true },
+    });
+
+    // Index by (mata_kuliah_id, semester_override) for O(1) lookup
+    const existingMap = new Map<string, number>();
+    for (const khs of existingList) {
+      const key = `${khs.mata_kuliah_id}_${khs.semester_override ?? 'null'}`;
+      existingMap.set(key, khs.id);
     }
+
+    const toCreate: typeof entries = [];
+    const toUpdate: Array<{ id: number; nilai: string | null; semester: number }> = [];
+
+    for (const e of entries) {
+      const key = `${e.mkId}_${e.semester}`;
+      const existingId = existingMap.get(key);
+      if (existingId) {
+        toUpdate.push({ id: existingId, nilai: e.nilai, semester: e.semester });
+      } else {
+        toCreate.push(e);
+      }
+    }
+
+    // Step 2: Execute creates and updates in parallel
+    await Promise.all([
+      toCreate.length > 0
+        ? prisma.khs.createMany({
+            data: toCreate.map((e) => ({
+              user_id: userId,
+              mata_kuliah_id: e.mkId,
+              nilai: e.nilai || null,
+              bobot_nilai: e.nilai ? getBobot(e.nilai) : null,
+              semester_input: e.semester,
+              semester_override: e.semester,
+            })),
+            skipDuplicates: true,
+          })
+        : Promise.resolve(),
+      ...toUpdate.map((u) =>
+        prisma.khs.update({
+          where: { id: u.id },
+          data: {
+            nilai: u.nilai || null,
+            bobot_nilai: u.nilai ? getBobot(u.nilai) : null,
+            semester_override: u.semester,
+          },
+        })
+      ),
+    ]);
+
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Gagal menyimpan registrasi" };

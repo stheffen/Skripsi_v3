@@ -73,6 +73,10 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   
   const handleAddSemester = () => {
     const nextSem = semesterList.length + 1;
+    if (nextSem > 14) {
+      setError("Maksimal semester yang dapat ditempuh adalah 14 (Status: Drop Out).");
+      return;
+    }
     setSemesterList([...semesterList, nextSem]);
     setActiveSem(nextSem);
   };
@@ -272,13 +276,15 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
             </button>
           );
         })}
-        <button
-          onClick={handleAddSemester}
-          className="px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex-1 min-w-[70px] bg-slate-100 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center justify-center gap-1"
-          title="Tambah Semester Baru"
-        >
-          <Plus size={16} /> Sem
-        </button>
+        {semesterList.length < 14 && (
+          <button
+            onClick={handleAddSemester}
+            className="px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex-1 min-w-[70px] bg-slate-100 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center justify-center gap-1"
+            title="Tambah Semester Baru"
+          >
+            <Plus size={16} /> Sem
+          </button>
+        )}
       </div>
 
       {isSksExceeded && (

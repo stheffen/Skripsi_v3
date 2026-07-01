@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { hitungSemesterAktif } from "@/lib/utils";
 
-export async function updateProfile(userId: string, data: { name: string; email: string; nim: string; angkatan?: string; semester_aktif?: number; phone?: string; password?: string }) {
+export async function updateProfile(userId: string, data: { name: string; email: string; nim: string; angkatan?: string; semester_aktif?: number; password?: string }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.id !== userId) {
@@ -32,7 +32,6 @@ export async function updateProfile(userId: string, data: { name: string; email:
       name: data.name,
       email: data.email,
       nim: data.nim || null,
-      phone: data.phone || null,
     };
 
     if (data.angkatan) {

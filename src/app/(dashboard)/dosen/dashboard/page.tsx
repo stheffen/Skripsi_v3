@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { getDosenDashboard } from "@/app/actions/dosen";
 import { Users, AlertTriangle, TrendingDown, CheckCircle, BookX } from 'lucide-react';
 import Link from "next/link";
-import IpkTrendChart from "./IpkTrendChart";
 export default async function DosenDashboardPage() {
   const session = await getServerSession(authOptions);
 
@@ -106,10 +105,6 @@ export default async function DosenDashboardPage() {
             Daftar Mahasiswa
           </Link>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <IpkTrendChart data={data.ipk_trend || []} />
       </div>
     </div>
   );

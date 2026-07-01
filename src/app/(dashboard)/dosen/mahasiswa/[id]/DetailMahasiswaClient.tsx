@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getCurriculumNilai } from "@/app/actions/khs";
+import IpsTrendChart from "./IpsTrendChart";
 
 const NILAI_COLORS: Record<string, string> = {
   A: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30",
@@ -81,7 +82,7 @@ function RekomendasiDisplay({ text }: { text: string }) {
   );
 }
 
-export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumDiambil, filledSemesters }: any) {
+export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumDiambil, filledSemesters, statHistory }: any) {
   const [activeTab, setActiveTab] = useState<"nilai" | "evaluasi">("nilai");
   
   // State for Nilai Tab - use first available semester as default
@@ -337,6 +338,11 @@ export default function DetailMahasiswaClient({ mahasiswa, initialData, mkBelumD
           </div>
         )}
       </div>
+
+      <IpsTrendChart 
+        data={statHistory?.map((s: any) => ({ semester: "Semester " + s.semester, ips: s.ips })) || []} 
+        studentName={mahasiswa.name} 
+      />
     </div>
   );
 }

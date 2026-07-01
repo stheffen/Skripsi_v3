@@ -12,7 +12,7 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
   const resolvedParams = await params;
   const mahasiswaId = parseInt(resolvedParams.id);
 
-  // Ambil data mahasiswa
+  // Ambil data mahasiswa dulu (guard — must be first)
   const mahasiswa = await prisma.user.findUnique({
     where: { id: mahasiswaId, role: "mahasiswa" },
     select: {
@@ -26,11 +26,27 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
 
   if (!mahasiswa) redirect("/dosen/mahasiswa");
 
-  // Ambil analisis terbaru
-  const latestAnalysis = await prisma.analisisRisiko.findFirst({
-    where: { user_id: mahasiswaId },
-    orderBy: { created_at: "desc" },
-  });
+  // OPTIMIZED: Run all 5 independent queries in parallel (was 5+ sequential awaits)
+  const [latestAnalysis, semuaMK, khsAda, filledSemRes, statHistory] = await Promise.all([
+    prisma.analisisRisiko.findFirst({
+      where: { user_id: mahasiswaId },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.mataKuliah.findMany({
+      orderBy: [{ semester: "asc" }, { nama: "asc" }],
+      select: { id: true, kode: true, nama: true, sks: true, semester: true, jenis: true },
+    }),
+    prisma.khs.findMany({
+      where: { user_id: mahasiswaId, nilai: { not: null } },
+      select: { mata_kuliah_id: true },
+    }),
+    getFilledSemesters(mahasiswaId),
+    prisma.analisisRisiko.findMany({
+      where: { user_id: mahasiswaId },
+      orderBy: { semester: 'asc' },
+      select: { semester: true, ips: true },
+    }),
+  ]);
 
   let initialData: any = null;
   if (latestAnalysis) {
@@ -48,17 +64,6 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
     } catch (e) {}
   }
 
-  // Ambil semua MK dari kurikulum
-  const semuaMK = await prisma.mataKuliah.findMany({
-    orderBy: [{ semester: "asc" }, { nama: "asc" }],
-  });
-
-  // Ambil KHS mahasiswa yang sudah ada nilai
-  const khsAda = await prisma.khs.findMany({
-    where: { user_id: mahasiswaId, nilai: { not: null } },
-    select: { mata_kuliah_id: true },
-  });
-
   // MK yang belum diambil
   const khsMkIds = new Set(khsAda.map((k: any) => k.mata_kuliah_id));
   const mkBelumDiambil = semuaMK
@@ -72,7 +77,6 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
       jenis: mk.jenis,
     }));
 
-  const filledSemRes = await getFilledSemesters(mahasiswaId);
   const filledSemesters = filledSemRes.data || [1];
   if (filledSemesters.length === 0) filledSemesters.push(1);
 
@@ -82,6 +86,7 @@ export default async function DetailMahasiswaPage({ params }: { params: Promise<
       initialData={initialData}
       mkBelumDiambil={mkBelumDiambil}
       filledSemesters={filledSemesters}
+      statHistory={statHistory}
     />
   );
 }

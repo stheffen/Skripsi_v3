@@ -7,29 +7,13 @@ import { RekomendasiService } from "@/services/rekomendasiService";
 
 export async function hitungAnalisisRisiko(userId: number, semesterAktif: number) {
   try {
-    const ipk = await AkademikService.hitungIPK(userId);
-    const ips = await AkademikService.hitungIPS(userId, semesterAktif);
-    const mkBermasalah = await AkademikService.hitungMKBermasalah(userId);
-    const mkDetail = await AkademikService.getMKBermasalahDetail(userId);
+    // OPTIMIZED: Was 7+ sequential DB queries — now only 3 parallel queries
+    const { ipk, ips, mkBermasalah, mkDetail, allKhs, totalSksLulus, totalSksTempuh, angkatan, nextSemesterCourses } =
+      await AkademikService.getFullAnalysisData(userId, semesterAktif);
 
-    const allKhs = await prisma.khs.findMany({
-      where: { user_id: userId, nilai: { not: null } },
-      include: { mata_kuliah: true },
-    });
-
-    const nextSemesterCourses = await prisma.mataKuliah.findMany({
-      where: { semester: semesterAktif + 1 }
-    });
-
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { angkatan: true } });
-    const angkatan = user?.angkatan ? parseInt(user.angkatan) : null;
-
-    const totalSksLulus = await AkademikService.hitungTotalSKSLulus(userId);
-    const totalSksTempuh = await AkademikService.hitungTotalSKSTempuh(userId);
     const sisaSks = Math.max(0, 144 - totalSksLulus);
 
     // Fuzzy Mamdani processing (angkatan >= 2026 -> 9 aturan, else 27 aturan)
-    // Ditambahkan parameter semesterAktif dan sisaSks untuk penalti keterlambatan lulus
     const fuzzyResult = prosesFuzzy(ips, ipk, mkBermasalah, angkatan, semesterAktif, sisaSks);
 
     // Generate recommendation
@@ -78,9 +62,23 @@ export async function hitungAnalisisRisiko(userId: number, semesterAktif: number
 
 export async function getRiwayatAnalisis(userId: number) {
   try {
+    // OPTIMIZED: Exclude large `detail_fuzzy` column from list view
     const riwayat = await prisma.analisisRisiko.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
+      select: {
+        id: true,
+        semester: true,
+        ipk: true,
+        ips: true,
+        mk_bermasalah: true,
+        fuzzy_output: true,
+        kategori: true,
+        rekomendasi: true,
+        created_at: true,
+        updated_at: true,
+        // detail_fuzzy intentionally excluded — too large for list view
+      },
     });
     return { data: riwayat };
   } catch (error: any) {

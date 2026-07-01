@@ -11,10 +11,15 @@ export default async function RegistrasiMKPage() {
   const user = session.user;
   if (user.role === "dosen") redirect("/dosen/dashboard");
 
-  const res = await getMKPerSemesterUntukRegistrasi(parseInt(user.id));
-  const mkPerSemester = res.data || {};
+  const userId = parseInt(user.id);
 
-  const stats = await AkademikService.statistikPerSemester(parseInt(user.id));
+  // OPTIMIZED: Run both independent fetches in parallel (was 2 sequential awaits)
+  const [res, stats] = await Promise.all([
+    getMKPerSemesterUntukRegistrasi(userId),
+    AkademikService.statistikPerSemester(userId),
+  ]);
+
+  const mkPerSemester = res.data || {};
 
   return <RegistrasiMKClient user={user} mkPerSemester={mkPerSemester} statHistory={stats} />;
 }

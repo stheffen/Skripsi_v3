@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { 
   LineChart, 
   Line, 
@@ -13,57 +13,31 @@ import {
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-interface IpkTrendChartProps {
-  data: any[];
+interface IpsTrendChartProps {
+  data: any[]; // Expected format: [{ semester: 'Semester 1', ips: 3.5 }, ...]
+  studentName?: string;
 }
 
-const colors = [
-  '#2563eb', // blue-600
-  '#dc2626', // red-600
-  '#16a34a', // green-600
-  '#d97706', // amber-600
-  '#9333ea', // purple-600
-  '#0891b2', // cyan-600
-  '#4f46e5', // indigo-600
-  '#be123c', // rose-600
-  '#15803d', // green-700
-  '#ea580c', // orange-600
-];
-
-export default function IpkTrendChart({ data }: IpkTrendChartProps) {
-  // Extract all student names from the data keys
-  const studentNames = useMemo(() => {
-    if (!data || data.length === 0) return [];
-    
-    // Use a Set to collect all unique keys across all semesters
-    const keys = new Set<string>();
-    data.forEach(item => {
-      Object.keys(item).forEach(key => {
-        if (key !== 'semester') {
-          keys.add(key);
-        }
-      });
-    });
-    return Array.from(keys);
-  }, [data]);
-
+export default function IpsTrendChart({ data, studentName = 'Mahasiswa' }: IpsTrendChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center min-h-[300px]">
         <TrendingUp size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
-        <p className="text-slate-500">Belum ada data riwayat IPK</p>
+        <p className="text-slate-500">Belum ada riwayat IPS</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mt-6">
       <div className="mb-6">
         <h3 className="font-semibold text-slate-900 dark:text-slate-200 flex items-center gap-2">
           <TrendingUp size={18} className="text-blue-600 dark:text-blue-400" /> 
-          Grafik Prestasi IPK Semester
+          Grafik Tren IPS (Indeks Prestasi Semester)
         </h3>
-        <p className="text-sm text-slate-500 mt-1">Pergerakan Indeks Prestasi Kumulatif masing-masing mahasiswa bimbingan</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Pergerakan IPS {studentName} dari semester ke semester
+        </p>
       </div>
       
       <div className="w-full h-[400px]">
@@ -95,17 +69,15 @@ export default function IpkTrendChart({ data }: IpkTrendChartProps) {
             />
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
             
-            {studentNames.map((name, index) => (
-              <Line
-                key={name}
-                type="monotone"
-                dataKey={name}
-                stroke={colors[index % colors.length]}
-                strokeWidth={2}
-                dot={{ r: 4, strokeWidth: 2 }}
-                activeDot={{ r: 6 }}
-              />
-            ))}
+            <Line
+              name="IPS"
+              type="monotone"
+              dataKey="ips"
+              stroke="#2563eb"
+              strokeWidth={3}
+              dot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
+              activeDot={{ r: 7 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
