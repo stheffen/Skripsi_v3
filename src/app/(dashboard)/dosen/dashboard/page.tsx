@@ -70,7 +70,7 @@ export default async function DosenDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none overflow-hidden flex flex-col">
           <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <BookX size={18} className="text-red-600 dark:text-red-400" /> Mahasiswa Kritis (MK Bermasalah > 2)
+            <BookX size={18} className="text-red-600 dark:text-red-400" /> Mahasiswa Kritis (MK Bermasalah &gt; 2)
           </h3>
           <div className="flex-1 overflow-auto pr-2 custom-scrollbar">
             {!data.mahasiswa_kritis || data.mahasiswa_kritis.length === 0 ? (
