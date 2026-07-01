@@ -81,7 +81,7 @@ export default function Login() {
           <p className="text-slate-600 dark:text-slate-400 text-lg mb-12 leading-relaxed max-w-md">
             Deteksi dini profil risiko akademik mahasiswa menggunakan ketepatan{" "}
             <strong className="text-slate-900 dark:text-white font-semibold">
-              Logika Fuzzy Tsukamoto
+              Logika Fuzzy Mamdani
             </strong>
             .
           </p>

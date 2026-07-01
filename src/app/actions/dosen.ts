@@ -26,7 +26,7 @@ export async function getDosenDashboard(dosenId: number) {
       };
     }
 
-    // Ambil analisis terbaru dari mahasiswa bimbingan
+    // Ambil semua analisis dari mahasiswa bimbingan untuk tren IPK
     const mahasiswa = await prisma.user.findMany({
       where: { 
         id: { in: mahasiswaIds },
@@ -34,8 +34,7 @@ export async function getDosenDashboard(dosenId: number) {
       },
       include: {
         analisis_risiko: {
-          orderBy: { created_at: 'desc' },
-          take: 1,
+          orderBy: { semester: 'asc' },
         },
       },
     });
@@ -44,10 +43,22 @@ export async function getDosenDashboard(dosenId: number) {
     let risikoSedang = 0;
     let risikoRendah = 0;
     let totalMkBermasalah = 0;
+    
+    const mahasiswaKritis: any[] = [];
+    const ipkDataBySemester: Record<number, any> = {};
 
     mahasiswa.forEach((m: any) => {
+      // Build IPK Trend
+      m.analisis_risiko.forEach((ar: any) => {
+        if (!ipkDataBySemester[ar.semester]) {
+          ipkDataBySemester[ar.semester] = { semester: `Semester ${ar.semester}` };
+        }
+        ipkDataBySemester[ar.semester][m.name] = ar.ipk;
+      });
+
+      // Status Terbaru (Semester Terakhir)
       if (m.analisis_risiko.length > 0) {
-        const ar = m.analisis_risiko[0];
+        const ar = m.analisis_risiko[m.analisis_risiko.length - 1];
         if (ar.kategori === 'Tinggi') risikoTinggi++;
         else if (ar.kategori === 'Sedang') risikoSedang++;
         else if (ar.kategori === 'Rendah') risikoRendah++;
@@ -60,8 +71,22 @@ export async function getDosenDashboard(dosenId: number) {
           } catch(e) {}
         }
         totalMkBermasalah += trueCount;
+
+        if (trueCount > 2) {
+          mahasiswaKritis.push({
+            id: m.id,
+            name: m.name,
+            nim: m.nim,
+            mk_bermasalah: trueCount
+          });
+        }
       }
     });
+
+    // convert ipkDataBySemester to array sorted by semester number
+    const ipkTrend = Object.keys(ipkDataBySemester)
+      .sort((a, b) => Number(a) - Number(b))
+      .map(key => ipkDataBySemester[Number(key)]);
 
     return {
       success: true,
@@ -71,6 +96,8 @@ export async function getDosenDashboard(dosenId: number) {
         risiko_sedang: risikoSedang,
         risiko_rendah: risikoRendah,
         total_mk_bermasalah: totalMkBermasalah,
+        mahasiswa_kritis: mahasiswaKritis,
+        ipk_trend: ipkTrend,
       }
     };
   } catch (error: any) {

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getDosenDashboard } from "@/app/actions/dosen";
 import { Users, AlertTriangle, TrendingDown, CheckCircle, BookX } from 'lucide-react';
 import Link from "next/link";
-
+import IpkTrendChart from "./IpkTrendChart";
 export default async function DosenDashboardPage() {
   const session = await getServerSession(authOptions);
 
@@ -68,16 +68,33 @@ export default async function DosenDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none overflow-hidden flex flex-col">
           <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <BookX size={18} className="text-blue-600 dark:text-blue-400" /> Status Akademik Global
+            <BookX size={18} className="text-red-600 dark:text-red-400" /> Mahasiswa Kritis (MK Bermasalah > 2)
           </h3>
-          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 mb-3">
-            <div>
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Total MK Bermasalah</p>
-              <p className="text-xs text-slate-500 mt-1">D/E dari mahasiswa bimbingan</p>
-            </div>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{data.total_mk_bermasalah}</p>
+          <div className="flex-1 overflow-auto pr-2 custom-scrollbar">
+            {!data.mahasiswa_kritis || data.mahasiswa_kritis.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 py-6">
+                <CheckCircle size={32} className="text-emerald-400 mb-2 opacity-50" />
+                <p className="text-sm">Tidak ada mahasiswa kritis</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {data.mahasiswa_kritis.map((m: any) => (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-100 dark:border-red-500/20">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{m.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{m.nim}</p>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="inline-flex items-center justify-center bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                        {m.mk_bermasalah} MK
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -89,6 +106,10 @@ export default async function DosenDashboardPage() {
             Daftar Mahasiswa
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <IpkTrendChart data={data.ipk_trend || []} />
       </div>
     </div>
   );
