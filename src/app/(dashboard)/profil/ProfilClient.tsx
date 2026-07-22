@@ -65,7 +65,11 @@ export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif
         setError(res.error);
       } else {
         setSuccess("Profil berhasil diperbarui!");
-        await update(); // Update JWT session
+        await update({
+          name: formData.name,
+          nim: formData.nim,
+          angkatan: formData.angkatan,
+        }); // Update JWT session
         setTimeout(() => {
           setIsEditing(false);
           setSuccess("");

@@ -65,13 +65,16 @@ export const authOptions: NextAuthOptions = {
           token.semester_aktif = user.semester_aktif;
         }
       }
-      if (trigger === "update" && session?.semester_aktif !== undefined) {
-        token.semester_aktif = session.semester_aktif;
-      }
-      if (trigger === "update" && session?.angkatan !== undefined) {
-        token.angkatan = session.angkatan;
-        if (token.role === 'mahasiswa') {
-          token.semester_aktif = hitungSemesterAktif(session.angkatan);
+      if (trigger === "update" && session) {
+        // Sync semua field yang mungkin berubah saat update profil
+        if (session.name !== undefined) token.name = session.name;
+        if (session.nim !== undefined) token.nim = session.nim;
+        if (session.semester_aktif !== undefined) token.semester_aktif = session.semester_aktif;
+        if (session.angkatan !== undefined) {
+          token.angkatan = session.angkatan;
+          if (token.role === 'mahasiswa') {
+            token.semester_aktif = hitungSemesterAktif(session.angkatan);
+          }
         }
       }
       return token;
@@ -81,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         session.user = {
           ...session.user,
           id: token.id as string,
+          name: token.name as string,
           role: token.role as string,
           nim: token.nim as string | null,
           semester_aktif: token.semester_aktif as number | null,

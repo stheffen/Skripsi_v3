@@ -60,21 +60,40 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   // Semua MK diflatten untuk mempermudah Modal
   const allMKs = Object.values(mkPerSemester).flat();
   
+  // Batas maksimum tab yang bisa ditampilkan: tidak boleh melebihi semester_aktif mahasiswa
+  const maxAllowedSemTab = Math.min(user.semester_aktif || 1, 14);
+
   const maxRegisteredSem = Math.max(0, ...Object.keys(mkPerSemester).map(Number).filter(s => mkPerSemester[s]?.some((mk:any) => mk.sudah_registrasi)));
   // Hanya tampilkan tab berdasarkan riwayat registrasi MK.
   // Jika belum pernah registrasi (mahasiswa baru), maka paksa mulai dari tab Sem 1 saja.
-  const highestSemToDisplay = Math.max(1, maxRegisteredSem);
+  const highestSemToDisplay = Math.min(Math.max(1, maxRegisteredSem), maxAllowedSemTab);
 
   const [semesterList, setSemesterList] = useState<number[]>(() => {
     return Array.from({length: highestSemToDisplay}, (_, i) => i + 1);
   });
 
-  const [activeSem, setActiveSem] = useState(user.semester_aktif || 1);
+  // Tentukan semester pertama yang belum terisi nilainya (auto-focus)
+  const firstUnfilledSem = (() => {
+    for (let s = 1; s <= highestSemToDisplay; s++) {
+      const mks = mkPerSemester[s] || [];
+      const registered = mks.filter((mk: any) => mk.sudah_registrasi);
+      if (registered.length === 0 || registered.some((mk: any) => !mk.nilai)) {
+        return s;
+      }
+    }
+    return Math.min(user.semester_aktif || 1, highestSemToDisplay);
+  })();
+
+  const [activeSem, setActiveSem] = useState(firstUnfilledSem);
   
   const handleAddSemester = () => {
     const nextSem = semesterList.length + 1;
-    if (nextSem > 14) {
-      setError("Maksimal semester yang dapat ditempuh adalah 14 (Status: Drop Out).");
+    if (nextSem > maxAllowedSemTab) {
+      if (nextSem > 14) {
+        setError("Maksimal semester yang dapat ditempuh adalah 14 (Status: Drop Out).");
+      } else {
+        setError(`Anda belum dapat menambah Semester ${nextSem}. Semester aktif Anda saat ini adalah Semester ${maxAllowedSemTab}.`);
+      }
       return;
     }
     setSemesterList([...semesterList, nextSem]);
@@ -219,6 +238,9 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   // MK yang bisa dipilih di modal = Belum registrasi atau (sudah registrasi tapi nilai D/E DAN BUKAN di semester aktif)
   // dan belum ada di draft
   const availableMKs = uniqueMKs.filter((mk: any) => {
+    // 0. Aturan Angkatan: Tidak boleh ambil MK dari semester lebih tinggi dari semester aktif
+    if (mk.semester > maxAllowedSemTab) return false;
+
     // 1. Aturan Ganjil/Genap
     const isActiveSemGanjil = activeSem % 2 !== 0;
     const isCurriculumGanjil = mk.semester % 2 !== 0;
@@ -276,7 +298,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
             </button>
           );
         })}
-        {semesterList.length < 14 && (
+        {semesterList.length < maxAllowedSemTab && (
           <button
             onClick={handleAddSemester}
             className="px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex-1 min-w-[70px] bg-slate-100 dark:bg-slate-800/50 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center justify-center gap-1"

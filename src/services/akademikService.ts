@@ -66,28 +66,9 @@ export class AkademikService {
 
   private static _hitungMKBermasalahFromList(khsList: any[], angkatan: number): number {
     const dedup = this.deduplicateKhsList(khsList);
+    // Hitung semua MK dengan nilai D atau E sebagai bermasalah
     const deMks = dedup.filter((k: any) => ['D', 'E'].includes(k.nilai));
-    deMks.sort((a: any, b: any) => {
-      if (a.nilai === 'E' && b.nilai !== 'E') return -1;
-      if (a.nilai !== 'E' && b.nilai === 'E') return 1;
-      return 0;
-    });
-    let dCountReguler = 0, count = 0;
-    for (const khs of deMks) {
-      const isBintang = MATA_KULIAH_BERBINTANG.includes(khs.mata_kuliah.kode);
-      if (khs.nilai === 'E') {
-        count++;
-      } else if (khs.nilai === 'D') {
-        if (isBintang || angkatan >= 2026) {
-          count++;
-        } else if (dCountReguler < 2) {
-          dCountReguler++;
-        } else {
-          count++;
-        }
-      }
-    }
-    return count;
+    return deMks.length;
   }
 
   private static _getMKBermasalahDetailFromList(khsList: any[]): any[] {

@@ -291,10 +291,10 @@ export default function DashboardClient({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           {
-            href: "/input-nilai",
+            href: "/registrasi-mk",
             icon: BookOpen,
-            title: "Input Nilai",
-            desc: "Masukkan nilai mata kuliah",
+            title: "Registrasi & Input MK",
+            desc: "Kelola KRS dan nilai mata kuliah",
             color: "from-blue-600 to-blue-800",
           },
           {
