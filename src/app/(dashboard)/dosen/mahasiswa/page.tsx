@@ -12,7 +12,7 @@ export default async function DosenMahasiswaPage() {
   }
 
   const res = await getDosenMahasiswaList(parseInt(session.user.id));
-  const mahasiswaList = res.data || [];
+  const mahasiswaList = ('data' in res && res.data) ? res.data : [];
 
   return <DosenMahasiswaClient dosenId={parseInt(session.user.id)} mahasiswaList={mahasiswaList} />;
 }

@@ -12,7 +12,7 @@ export default async function PermohonanPage() {
   }
 
   const res = await getPermohonanMasuk(parseInt(session.user.id));
-  const permohonan = res.success ? res.data : [];
+  const permohonan = 'data' in res && res.data ? res.data : [];
 
   return <PermohonanClient initialData={permohonan} />;
 }

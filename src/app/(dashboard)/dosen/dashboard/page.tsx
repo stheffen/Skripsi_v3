@@ -12,7 +12,7 @@ export default async function DosenDashboardPage() {
   }
 
   const res = await getDosenDashboard(parseInt(session.user.id));
-  const data = res.data || { total_mahasiswa: 0, risiko_tinggi: 0, risiko_sedang: 0, risiko_rendah: 0, total_mk_bermasalah: 0 };
+  const data = ('data' in res && res.data) ? res.data : { total_mahasiswa: 0, risiko_tinggi: 0, risiko_sedang: 0, risiko_rendah: 0, total_mk_bermasalah: 0 };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
