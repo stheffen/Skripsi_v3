@@ -11,9 +11,9 @@ export default async function ProfilPage() {
     redirect("/login");
   }
   
-  let dosenPA = null;
-  let dosenList = [];
-  let permohonanAktif = null;
+  let dosenPA: any = null;
+  let dosenList: any[] = [];
+  let permohonanAktif: any = null;
   
   if (session.user.role === 'mahasiswa') {
     const userId = parseInt(session.user.id);
