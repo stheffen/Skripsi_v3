@@ -238,9 +238,6 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   // MK yang bisa dipilih di modal = Belum registrasi atau (sudah registrasi tapi nilai D/E DAN BUKAN di semester aktif)
   // dan belum ada di draft
   const availableMKs = uniqueMKs.filter((mk: any) => {
-    // 0. Aturan Angkatan: Tidak boleh ambil MK dari semester lebih tinggi dari semester aktif
-    if (mk.semester > maxAllowedSemTab) return false;
-
     // 1. Aturan Ganjil/Genap
     const isActiveSemGanjil = activeSem % 2 !== 0;
     const isCurriculumGanjil = mk.semester % 2 !== 0;
