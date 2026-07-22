@@ -34,6 +34,15 @@ export async function registerUser(formData: FormData) {
       data.nim = formData.get("nim") as string;
       data.angkatan = formData.get("angkatan") as string;
       data.semester_aktif = hitungSemesterAktif(data.angkatan);
+      
+      const dosenId = formData.get("dosen_id");
+      if (dosenId) {
+        data.mahasiswaBimbingan = {
+          create: {
+            dosen_id: parseInt(dosenId as string, 10)
+          }
+        };
+      }
     }
 
     const user = await prisma.user.create({ data });
@@ -42,5 +51,18 @@ export async function registerUser(formData: FormData) {
   } catch (error: any) {
     console.error(error);
     return { error: error.message || "Terjadi kesalahan" };
+  }
+}
+
+export async function getDosenList() {
+  try {
+    const dosenList = await prisma.user.findMany({
+      where: { role: 'dosen' },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
+    });
+    return { success: true, data: dosenList };
+  } catch (error) {
+    return { error: "Gagal memuat daftar dosen" };
   }
 }

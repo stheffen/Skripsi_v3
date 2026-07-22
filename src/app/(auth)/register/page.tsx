@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -8,7 +8,7 @@ import { AlertTriangle, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { registerUser } from "@/app/actions/auth";
+import { registerUser, getDosenList } from "@/app/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import { Card } from "@/components/ui/card";
 
 const registerSchema = z
   .object({
-    role: z.enum(["mahasiswa", "dosen"]),
+    role: z.literal("mahasiswa"),
     name: z.string().min(1, "Nama wajib diisi"),
     email: z
       .string()
@@ -24,38 +24,31 @@ const registerSchema = z
       .email({ message: "Format email tidak valid" }),
     password: z.string().min(8, "Password minimal 8 karakter"),
     password_confirmation: z.string().min(1, "Konfirmasi password wajib diisi"),
-    nim: z.string().optional(),
-    angkatan: z.string().optional(),
+    nim: z.string().min(1, "NIM wajib diisi"),
+    angkatan: z.string().min(1, "Angkatan wajib diisi"),
+    dosen_id: z.string().min(1, "Dosen PA wajib dipilih"),
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "Password tidak cocok",
     path: ["password_confirmation"],
-  })
-  .refine(
-    (data) => {
-      if (data.role === "mahasiswa") {
-        return !!data.nim;
-      }
-      return true;
-    },
-    {
-      message: "NIM wajib diisi untuk mahasiswa",
-      path: ["nim"],
-    },
-  );
-
+  });
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const router = useRouter();
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+  const [dosenList, setDosenList] = useState<{id: number, name: string}[]>([]);
+
+  useEffect(() => {
+    getDosenList().then((res) => {
+      if (res.data) setDosenList(res.data);
+    });
+  }, []);
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -67,10 +60,9 @@ export default function Register() {
       password_confirmation: "",
       nim: "",
       angkatan: "",
+      dosen_id: "",
     },
   });
-
-  const selectedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormValues) => {
     setError("");
@@ -100,7 +92,7 @@ export default function Register() {
       if (signInRes?.error) {
         setError("Login gagal setelah registrasi");
       } else {
-        router.push(data.role === "dosen" ? "/dosen/dashboard" : "/dashboard");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch (err) {
@@ -137,32 +129,7 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <Label className="block text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider mb-2">
-                Daftar Sebagai
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  ["mahasiswa", "Mahasiswa"],
-                  ["dosen", "Dosen PA"],
-                ].map(([val, label]) => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() =>
-                      setValue("role", val as "mahasiswa" | "dosen")
-                    }
-                    className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                      selectedRole === val
-                        ? "bg-blue-600/10 dark:bg-blue-600/20 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-300 shadow-sm"
-                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2 space-y-2">
@@ -195,8 +162,6 @@ export default function Register() {
                 )}
               </div>
 
-              {selectedRole === "mahasiswa" && (
-                <>
                   <div className="space-y-2">
                     <Label htmlFor="nim" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
                       NIM
@@ -220,12 +185,37 @@ export default function Register() {
                     <Input
                       id="angkatan"
                       {...register("angkatan")}
-                      className="h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all"
+                      className={`h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.angkatan ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                       placeholder="Contoh: 2022"
                     />
+                    {errors.angkatan && (
+                      <p className="text-xs font-medium text-red-500">
+                        {errors.angkatan.message}
+                      </p>
+                    )}
                   </div>
-                </>
-              )}
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="dosen_id" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
+                      Dosen Pembimbing Akademik (PA)
+                    </Label>
+                    <select
+                      id="dosen_id"
+                      {...register("dosen_id")}
+                      className={`w-full h-12 px-3 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus-visible:ring-blue-500 rounded-xl transition-all ${errors.dosen_id ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                    >
+                      <option value="">-- Pilih Dosen PA --</option>
+                      {dosenList.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.dosen_id && (
+                      <p className="text-xs font-medium text-red-500">
+                        {errors.dosen_id.message}
+                      </p>
+                    )}
+                  </div>
 
               <div className="sm:col-span-2 space-y-2">
                 <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">

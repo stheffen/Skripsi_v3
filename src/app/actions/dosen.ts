@@ -207,3 +207,60 @@ export async function removeMahasiswaBimbingan(dosenId: number, mahasiswaId: num
     return { error: "Gagal menghapus mahasiswa" };
   }
 }
+
+export async function getPermohonanMasuk(dosenId: number) {
+  try {
+    const permohonan = await prisma.permohonanGantiDosen.findMany({
+      where: { 
+        dosen_baru_id: dosenId,
+        status: "pending"
+      },
+      include: {
+        mahasiswa: { select: { name: true, nim: true, angkatan: true } },
+        dosen_lama: { select: { name: true } }
+      },
+      orderBy: { created_at: "desc" }
+    });
+    
+    return { success: true, data: permohonan };
+  } catch (error: any) {
+    return { error: "Gagal memuat daftar permohonan" };
+  }
+}
+
+export async function prosesPermohonanGantiDosen(permohonanId: number, status: 'disetujui' | 'ditolak', catatan: string) {
+  try {
+    const permohonan = await prisma.permohonanGantiDosen.findUnique({
+      where: { id: permohonanId }
+    });
+    
+    if (!permohonan || permohonan.status !== "pending") {
+      return { error: "Permohonan tidak valid atau sudah diproses" };
+    }
+    
+    await prisma.permohonanGantiDosen.update({
+      where: { id: permohonanId },
+      data: { status, catatan_dosen: catatan }
+    });
+    
+    if (status === 'disetujui') {
+      await prisma.dosenMahasiswa.deleteMany({
+        where: { 
+          mahasiswa_id: permohonan.mahasiswa_id,
+          dosen_id: permohonan.dosen_lama_id
+        }
+      });
+      
+      await prisma.dosenMahasiswa.create({
+        data: {
+          mahasiswa_id: permohonan.mahasiswa_id,
+          dosen_id: permohonan.dosen_baru_id
+        }
+      });
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Gagal memproses permohonan" };
+  }
+}

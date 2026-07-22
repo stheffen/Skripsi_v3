@@ -58,3 +58,40 @@ export async function updateProfile(userId: string, data: { name: string; email:
     return { error: error.message || "Gagal memperbarui profil." };
   }
 }
+
+export async function ajukanGantiDosen(mahasiswaId: number, dosenBaruId: number, alasan: string) {
+  try {
+    const currentDM = await prisma.dosenMahasiswa.findFirst({
+      where: { mahasiswa_id: mahasiswaId }
+    });
+    
+    if (!currentDM) {
+      return { error: "Anda belum memiliki Dosen PA" };
+    }
+    
+    if (currentDM.dosen_id === dosenBaruId) {
+      return { error: "Dosen yang Anda pilih sudah menjadi Dosen PA Anda saat ini" };
+    }
+    
+    const pending = await prisma.permohonanGantiDosen.findFirst({
+      where: { mahasiswa_id: mahasiswaId, status: "pending" }
+    });
+    
+    if (pending) {
+      return { error: "Anda masih memiliki permohonan yang belum diproses" };
+    }
+    
+    await prisma.permohonanGantiDosen.create({
+      data: {
+        mahasiswa_id: mahasiswaId,
+        dosen_lama_id: currentDM.dosen_id,
+        dosen_baru_id: dosenBaruId,
+        alasan
+      }
+    });
+    
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Gagal mengajukan permohonan" };
+  }
+}

@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { User, Mail, Shield, GraduationCap, Calendar, FileText, Lock, Edit3, Save, X, AlertTriangle, CheckCircle } from 'lucide-react';
-import { updateProfile } from "@/app/actions/profile";
+import { User, Mail, Shield, GraduationCap, Calendar, FileText, Lock, Edit3, Save, X, AlertTriangle, CheckCircle, Users } from 'lucide-react';
+import { updateProfile, ajukanGantiDosen } from "@/app/actions/profile";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-export default function ProfilClient({ user }: { user: any }) {
+export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif }: { user: any, dosenPA?: any, dosenList?: any[], permohonanAktif?: any }) {
   const router = useRouter();
   const { update } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  
+  const [isGantiDosenOpen, setIsGantiDosenOpen] = useState(false);
+  const [gantiDosenForm, setGantiDosenForm] = useState({ dosen_baru_id: "", alasan: "" });
 
   const [formData, setFormData] = useState({
     name: user.name || "",
@@ -68,6 +71,32 @@ export default function ProfilClient({ user }: { user: any }) {
           setSuccess("");
           router.refresh();
         }, 1500);
+      }
+    });
+  };
+
+  const handleAjukanGantiDosen = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    
+    if (!gantiDosenForm.dosen_baru_id || !gantiDosenForm.alasan) {
+      setError("Silakan pilih dosen dan isi alasan.");
+      return;
+    }
+    
+    startTransition(async () => {
+      const res = await ajukanGantiDosen(
+        parseInt(user.id), 
+        parseInt(gantiDosenForm.dosen_baru_id), 
+        gantiDosenForm.alasan
+      );
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setSuccess("Permohonan berhasil diajukan!");
+        setIsGantiDosenOpen(false);
+        router.refresh();
       }
     });
   };
@@ -259,6 +288,88 @@ export default function ProfilClient({ user }: { user: any }) {
                         <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">Semester {user.semester_aktif || '-'}</p>
                       </div>
                     </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-start justify-between gap-4 sm:col-span-2">
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
+                          <Users size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 font-medium mb-0.5">Dosen PA</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">
+                            {dosenPA ? dosenPA.name : 'Belum memilih Dosen PA'}
+                          </p>
+                          
+                          {permohonanAktif && permohonanAktif.status === 'pending' && (
+                            <div className="mt-2 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800/50 flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              Menunggu persetujuan pindah ke {permohonanAktif.dosen_baru?.name}
+                            </div>
+                          )}
+                          {permohonanAktif && permohonanAktif.status === 'ditolak' && (
+                            <div className="mt-2 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800/50">
+                              <span className="font-semibold">Ditolak:</span> {permohonanAktif.catatan_dosen || 'Tidak ada catatan'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {!isGantiDosenOpen && (!permohonanAktif || permohonanAktif.status !== 'pending') && (
+                        <button 
+                          onClick={() => setIsGantiDosenOpen(true)}
+                          className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
+                        >
+                          Ganti Dosen
+                        </button>
+                      )}
+                    </div>
+                    
+                    {isGantiDosenOpen && (
+                      <div className="sm:col-span-2 bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Ajukan Pergantian Dosen PA</h3>
+                          <button onClick={() => setIsGantiDosenOpen(false)} className="text-slate-400 hover:text-slate-600">
+                            <X size={16} />
+                          </button>
+                        </div>
+                        <form onSubmit={handleAjukanGantiDosen} className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Pilih Dosen PA Baru</label>
+                            <select 
+                              required
+                              value={gantiDosenForm.dosen_baru_id}
+                              onChange={(e) => setGantiDosenForm(prev => ({...prev, dosen_baru_id: e.target.value}))}
+                              className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">-- Pilih Dosen --</option>
+                              {dosenList?.filter(d => d.id !== dosenPA?.id).map(d => (
+                                <option key={d.id} value={d.id}>{d.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Alasan Pergantian</label>
+                            <textarea 
+                              required
+                              value={gantiDosenForm.alasan}
+                              onChange={(e) => setGantiDosenForm(prev => ({...prev, alasan: e.target.value}))}
+                              className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20"
+                              placeholder="Tuliskan alasan Anda..."
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <button 
+                              type="submit"
+                              disabled={isPending}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition disabled:opacity-50 flex items-center gap-2"
+                            >
+                              {isPending && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                              Ajukan Permohonan
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
                   </>
                 )}
 

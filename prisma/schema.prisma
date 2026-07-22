@@ -26,9 +26,13 @@ model User {
 
   dosenPembimbing    DosenMahasiswa[] @relation("DosenToMahasiswa")
   mahasiswaBimbingan DosenMahasiswa[] @relation("MahasiswaToDosen")
+
+  permohonanMahasiswa PermohonanGantiDosen[] @relation("PermohonanMahasiswa")
+  permohonanDosenLama PermohonanGantiDosen[] @relation("PermohonanDosenLama")
+  permohonanDosenBaru PermohonanGantiDosen[] @relation("PermohonanDosenBaru")
   
   @@index([role])
-  @@map("users")
+  @@map("v2_users")
 }
 
 model MataKuliah {
@@ -45,7 +49,7 @@ model MataKuliah {
 
   khs        Khs[]
 
-  @@map("mata_kuliah")
+  @@map("v2_mata_kuliah")
 }
 
 model Khs {
@@ -66,7 +70,7 @@ model Khs {
   @@index([mata_kuliah_id])
   @@index([user_id, nilai])
   @@index([user_id, mata_kuliah_id])
-  @@map("khs")
+  @@map("v2_khs")
 }
 
 model AnalisisRisiko {
@@ -88,7 +92,7 @@ model AnalisisRisiko {
   @@index([user_id])
   @@index([user_id, created_at(sort: Desc)])
   @@index([user_id, semester])
-  @@map("analisis_risiko")
+  @@map("v2_analisis_risiko")
 }
 
 model DosenMahasiswa {
@@ -104,5 +108,26 @@ model DosenMahasiswa {
   @@unique([dosen_id, mahasiswa_id])
   @@index([dosen_id])
   @@index([mahasiswa_id])
-  @@map("dosen_mahasiswa")
+  @@map("v2_dosen_mahasiswa")
+}
+
+model PermohonanGantiDosen {
+  id             Int      @id @default(autoincrement())
+  mahasiswa_id   Int
+  dosen_lama_id  Int
+  dosen_baru_id  Int
+  status         String   @default("pending") // pending, disetujui, ditolak
+  alasan         String?
+  catatan_dosen  String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  mahasiswa   User @relation("PermohonanMahasiswa", fields: [mahasiswa_id], references: [id], onDelete: Cascade)
+  dosen_lama  User @relation("PermohonanDosenLama", fields: [dosen_lama_id], references: [id], onDelete: Cascade)
+  dosen_baru  User @relation("PermohonanDosenBaru", fields: [dosen_baru_id], references: [id], onDelete: Cascade)
+
+  @@index([mahasiswa_id])
+  @@index([dosen_lama_id])
+  @@index([dosen_baru_id])
+  @@map("v2_permohonan_ganti_dosen")
 }

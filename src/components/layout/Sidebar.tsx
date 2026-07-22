@@ -31,6 +31,7 @@ const mahasiswaNav = [
 const dosenNav = [
   { to: "/dosen/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/dosen/mahasiswa", icon: Users, label: "Mahasiswa" },
+  { to: "/dosen/permohonan", icon: ClipboardList, label: "Permohonan" },
   { to: "/dosen/profil", icon: User, label: "Profil" },
 ];
 
