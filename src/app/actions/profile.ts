@@ -65,8 +65,13 @@ export async function ajukanGantiDosen(mahasiswaId: number, dosenBaruId: number,
       where: { mahasiswa_id: mahasiswaId }
     });
     
+    // Jika mahasiswa belum punya Dosen PA (misal dihapus dari sisi dosen),
+    // langsung tetapkan dosen baru tanpa perlu alur permohonan
     if (!currentDM) {
-      return { error: "Anda belum memiliki Dosen PA" };
+      await prisma.dosenMahasiswa.create({
+        data: { dosen_id: dosenBaruId, mahasiswa_id: mahasiswaId }
+      });
+      return { success: true, message: "Dosen PA berhasil ditetapkan." };
     }
     
     if (currentDM.dosen_id === dosenBaruId) {
@@ -95,3 +100,4 @@ export async function ajukanGantiDosen(mahasiswaId: number, dosenBaruId: number,
     return { error: error.message || "Gagal mengajukan permohonan" };
   }
 }
+

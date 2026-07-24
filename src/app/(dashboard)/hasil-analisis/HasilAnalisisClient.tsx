@@ -323,7 +323,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
                   </div>
                   {angkatanMode !== "baru_9_aturan" && fuzzyDetail.fuzzifikasi.mk && (
                     <div>
-                      <p className="text-xs text-slate-400 mb-2 font-medium">Input Fuzzy MK Bermasalah = {result.mk_bermasalah}</p>
+                      <p className="text-xs text-slate-400 mb-2 font-medium">Input Fuzzy MK Bermasalah = {result.mk_bermasalah_detail?.length ?? result.mk_bermasalah}</p>
                       <div className="space-y-1.5">
                         <MembershipBar label="Sedikit" value={fuzzyDetail.fuzzifikasi.mk.sedikit} color="#10b981" />
                         <MembershipBar label="Sedang" value={fuzzyDetail.fuzzifikasi.mk.sedang} color="#f59e0b" />

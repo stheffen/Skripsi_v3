@@ -323,7 +323,7 @@ export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif
                           onClick={() => setIsGantiDosenOpen(true)}
                           className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
                         >
-                          Ganti Dosen
+                          {dosenPA ? 'Ganti Dosen' : 'Pilih Dosen PA'}
                         </button>
                       )}
                     </div>
@@ -331,14 +331,16 @@ export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif
                     {isGantiDosenOpen && (
                       <div className="sm:col-span-2 bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl animate-in fade-in slide-in-from-top-2">
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Ajukan Pergantian Dosen PA</h3>
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                            {dosenPA ? 'Ajukan Pergantian Dosen PA' : 'Pilih Dosen PA'}
+                          </h3>
                           <button onClick={() => setIsGantiDosenOpen(false)} className="text-slate-400 hover:text-slate-600">
                             <X size={16} />
                           </button>
                         </div>
                         <form onSubmit={handleAjukanGantiDosen} className="space-y-4">
                           <div>
-                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Pilih Dosen PA Baru</label>
+                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Pilih Dosen PA {dosenPA ? 'Baru' : ''}</label>
                             <select 
                               required
                               value={gantiDosenForm.dosen_baru_id}
@@ -351,16 +353,18 @@ export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif
                               ))}
                             </select>
                           </div>
-                          <div>
-                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Alasan Pergantian</label>
-                            <textarea 
-                              required
-                              value={gantiDosenForm.alasan}
-                              onChange={(e) => setGantiDosenForm(prev => ({...prev, alasan: e.target.value}))}
-                              className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20"
-                              placeholder="Tuliskan alasan Anda..."
-                            />
-                          </div>
+                          {dosenPA && (
+                            <div>
+                              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Alasan Pergantian</label>
+                              <textarea 
+                                required
+                                value={gantiDosenForm.alasan}
+                                onChange={(e) => setGantiDosenForm(prev => ({...prev, alasan: e.target.value}))}
+                                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20"
+                                placeholder="Tuliskan alasan Anda..."
+                              />
+                            </div>
+                          )}
                           <div className="flex justify-end">
                             <button 
                               type="submit"
@@ -368,7 +372,7 @@ export default function ProfilClient({ user, dosenPA, dosenList, permohonanAktif
                               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition disabled:opacity-50 flex items-center gap-2"
                             >
                               {isPending && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                              Ajukan Permohonan
+                              {dosenPA ? 'Ajukan Permohonan' : 'Tetapkan Dosen PA'}
                             </button>
                           </div>
                         </form>

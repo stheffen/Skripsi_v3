@@ -153,13 +153,7 @@ export default function DosenMahasiswaClient({ dosenId, mahasiswaList }: { dosen
                   <ChevronRight size={20} className="text-slate-400 flex-shrink-0" />
                 </div>
               </Link>
-              <button 
-                onClick={(e) => { e.preventDefault(); setStudentToDelete({id: m.id, name: m.name}); }}
-                className="bg-red-50 dark:bg-transparent sm:border-l border-t sm:border-t-0 border-red-100 dark:border-slate-800 px-5 py-4 sm:py-0 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors flex items-center justify-center"
-                title="Hapus dari Bimbingan"
-              >
-                <Trash2 size={18} />
-              </button>
+
             </div>
           ))
         )}
@@ -221,35 +215,7 @@ export default function DosenMahasiswaClient({ dosenId, mahasiswaList }: { dosen
         </div>
       )}
 
-      {/* MODAL KONFIRMASI HAPUS */}
-      {studentToDelete && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Hapus dari Pantauan?</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-              Anda yakin ingin menghapus <strong>{studentToDelete.name}</strong> dari daftar bimbingan Anda? Analisis risikonya tidak akan tampil lagi di dasbor Anda.
-            </p>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setStudentToDelete(null)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-              >
-                Batal
-              </button>
-              <button 
-                onClick={confirmDelete}
-                disabled={isLoading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 transition"
-              >
-                {isLoading ? 'Menghapus...' : 'Ya, Hapus'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

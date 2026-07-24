@@ -133,9 +133,12 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   };
 
   const handleAddFromModal = () => {
-    const toAdd = allMKs.filter(mk => selectedInModal[mk.id] && (!mk.sudah_registrasi || mk.nilai === 'D' || mk.nilai === 'E') && !draftMKs.find(d => d.id === mk.id));
-    // Reset nilai untuk matkul yang diulang
-    const updatedDrafts = toAdd.map(mk => ({ ...mk, is_retake: mk.sudah_registrasi }));
+    const toAdd = allMKs.filter(mk => selectedInModal[mk.id] && (!mk.sudah_registrasi || mk.nilai === 'D' || mk.nilai === 'E') && !draftMKs.find(d => d.kode === mk.kode));
+    const updatedDrafts = toAdd.map(mk => ({ 
+      ...mk, 
+      mk_id: mk.mk_id ?? mk.id,
+      is_retake: mk.sudah_registrasi 
+    }));
     setDraftMKs([...draftMKs, ...updatedDrafts]);
     setIsModalOpen(false);
   };
@@ -160,13 +163,13 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
     
     // Drafts (Set nilai ke null saat draft disimpan, kecuali sudah diset)
     draftMKs.forEach(mk => {
-      entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
+      entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
     });
 
-    // Current (Updates)
+    // Current (Updates) — mk.id sekarang = khs.id yang unik
     currentKRS.forEach(mk => {
       if ((nilaiMap[mk.id] ?? null) !== (mk.nilai ?? null)) {
-        entries.push({ mkId: mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
+        entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
       }
     });
 

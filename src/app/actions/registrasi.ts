@@ -61,7 +61,8 @@ export async function getMKPerSemesterUntukRegistrasi(userId: number) {
           const semEfektif = khs.semester_override ?? mk.semester;
           if (!grouped[semEfektif]) grouped[semEfektif] = [];
           grouped[semEfektif].push({
-            id: mk.id,
+            id: khs.id,       // ID KHS record unik — BUKAN mk.id agar nilai tiap semester terpisah
+            mk_id: mk.id,     // ID MataKuliah untuk referensi kurikulum
             kode: mk.kode,
             nama: mk.nama,
             sks: mk.sks,
@@ -205,10 +206,11 @@ export async function batchRegistrasiMK(
 /**
  * Hapus MK dari KRS (Hapus dari KHS)
  */
-export async function deleteRegistrasiMK(userId: number, mkId: number, semesterInput: number) {
+export async function deleteRegistrasiMK(userId: number, khsId: number, semesterInput: number) {
   try {
+    // Hapus berdasarkan khs.id (record unik), bukan mata_kuliah_id
     await prisma.khs.deleteMany({
-      where: { user_id: userId, mata_kuliah_id: mkId, semester_override: semesterInput },
+      where: { id: khsId, user_id: userId },
     });
     return { success: true };
   } catch (error: any) {
