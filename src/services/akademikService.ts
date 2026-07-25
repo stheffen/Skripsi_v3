@@ -237,11 +237,16 @@ export class AkademikService {
       semStats[semEfektif].total_mk++;
     }
 
-    // 2. Hitung IPK, SKS Lulus, dan MK Bermasalah (Menggunakan internal helpers)
-    const ipk = this._hitungIPKFromList(allKhs);
-    const mkBermasalahCount = this._hitungMKBermasalahFromList(allKhs, angkatan);
-    const totalSksLulus = this._hitungTotalSKSLulusFromList(allKhs);
-    const dedup = this.deduplicateKhsList(allKhs);
+    // 2. Filter KHS hanya sampai semesterAktif yang dipilih, lalu hitung
+    const filteredKhs = allKhs.filter(khs => {
+      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
+      return semEfektif <= semesterAktif;
+    });
+
+    const ipk = this._hitungIPKFromList(filteredKhs);
+    const mkBermasalahCount = this._hitungMKBermasalahFromList(filteredKhs, angkatan);
+    const totalSksLulus = this._hitungTotalSKSLulusFromList(filteredKhs);
+    const dedup = this.deduplicateKhsList(filteredKhs);
     const totalSksKumulatif = dedup.reduce((acc: number, k: any) => acc + k.mata_kuliah.sks, 0);
     const totalMkDE = dedup.filter((k: any) => ['D', 'E'].includes(k.nilai)).length;
 
@@ -281,13 +286,19 @@ export class AkademikService {
 
     const angkatan = user?.angkatan ? parseInt(user.angkatan) : 2026;
 
-    const ipk    = this._hitungIPKFromList(allKhs);
-    const ips    = this._hitungIPSFromList(allKhs, semesterAktif);
-    const mkBermasalah = this._hitungMKBermasalahFromList(allKhs, angkatan);
-    const mkDetail     = this._getMKBermasalahDetailFromList(allKhs);
-    const totalSksLulus  = this._hitungTotalSKSLulusFromList(allKhs);
-    const totalSksTempuh = this._hitungTotalSKSTempuhFromList(allKhs);
+    // Filter KHS hanya sampai semester yang sedang dianalisis
+    const filteredKhs = allKhs.filter(khs => {
+      const semEfektif = khs.semester_override ?? khs.mata_kuliah.semester;
+      return semEfektif <= semesterAktif;
+    });
 
-    return { ipk, ips, mkBermasalah, mkDetail, allKhs, totalSksLulus, totalSksTempuh, angkatan, nextSemesterCourses };
+    const ipk    = this._hitungIPKFromList(filteredKhs);
+    const ips    = this._hitungIPSFromList(filteredKhs, semesterAktif);
+    const mkBermasalah = this._hitungMKBermasalahFromList(filteredKhs, angkatan);
+    const mkDetail     = this._getMKBermasalahDetailFromList(filteredKhs);
+    const totalSksLulus  = this._hitungTotalSKSLulusFromList(filteredKhs);
+    const totalSksTempuh = this._hitungTotalSKSTempuhFromList(filteredKhs);
+
+    return { ipk, ips, mkBermasalah, mkDetail, allKhs: filteredKhs, totalSksLulus, totalSksTempuh, angkatan, nextSemesterCourses };
   }
 }

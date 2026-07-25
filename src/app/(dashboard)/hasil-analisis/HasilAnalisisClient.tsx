@@ -296,9 +296,8 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
               </div>
             </div>
           </div>
-
+{/*
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Fuzzifikasi */}
             {fuzzyDetail?.fuzzifikasi && (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-5 text-sm flex items-center gap-2">
@@ -344,7 +343,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
             )}
             <HasilRadarChart data={radarData} kategori={result.kategori} fuzzy_output={result.fuzzy_output} />
           </div>
-
+*/}
           {/* MK Bermasalah */}
           {result.mk_bermasalah_detail?.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
@@ -367,7 +366,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
 
 
 
-          {/* Rules Aktif */}
+          {/*
           {fuzzyDetail?.rules_aktif?.length > 0 && (
             <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
               <button onClick={() => setShowRules(!showRules)} className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-800/50 transition">
@@ -396,6 +395,7 @@ export default function HasilAnalisisClient({ user, initialData, maxSemester = 1
               )}
             </div>
           )}
+            */}
         </>
       )}
     </div>

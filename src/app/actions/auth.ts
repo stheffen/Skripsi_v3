@@ -31,7 +31,15 @@ export async function registerUser(formData: FormData) {
     };
 
     if (role === "mahasiswa") {
-      data.nim = formData.get("nim") as string;
+      const nim = formData.get("nim") as string;
+      if (nim) {
+        const existingNim = await prisma.user.findFirst({ where: { nim } });
+        if (existingNim) {
+          return { error: "NIM sudah terdaftar" };
+        }
+      }
+      
+      data.nim = nim;
       data.angkatan = formData.get("angkatan") as string;
       data.semester_aktif = hitungSemesterAktif(data.angkatan);
       
