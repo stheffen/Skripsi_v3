@@ -109,14 +109,8 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
   // State untuk MK yang ditambahkan dari Modal (Draft)
   const [draftMKs, setDraftMKs] = useState<any[]>([]);
   
-  // State nilai (menggabungkan yang sudah ada dan yang baru diubah)
-  const [nilaiMap, setNilaiMap] = useState<Record<number, string | null>>(() => {
-    const initial: Record<number, string | null> = {};
-    allMKs.forEach(mk => {
-      if (mk.sudah_registrasi) initial[mk.id] = mk.nilai;
-    });
-    return initial;
-  });
+  // State nilai hanya digunakan untuk menyimpan PERUBAHAN sementara sebelum disave (dirty state)
+  const [nilaiMap, setNilaiMap] = useState<Record<number, string | null>>({});
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalSearch, setModalSearch] = useState("");
@@ -166,13 +160,13 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
     
     // Drafts (Set nilai ke null saat draft disimpan, kecuali sudah diset)
     draftMKs.forEach(mk => {
-      entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
+      entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id] !== undefined ? nilaiMap[mk.id] : null, semester: activeSem });
     });
 
     // Current (Updates) — mk.id sekarang = khs.id yang unik
     currentKRS.forEach(mk => {
-      if ((nilaiMap[mk.id] ?? null) !== (mk.nilai ?? null)) {
-        entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id] ?? null, semester: activeSem });
+      if (nilaiMap[mk.id] !== undefined && nilaiMap[mk.id] !== (mk.nilai ?? null)) {
+        entries.push({ mkId: mk.mk_id ?? mk.id, nilai: nilaiMap[mk.id], semester: activeSem });
       }
     });
 
@@ -191,6 +185,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
         setTimeout(() => {
           setSaved(false);
           setDraftMKs([]);
+          setNilaiMap({}); // CLEAR DIRTY STATE
           router.refresh();
         }, 1500);
       }
@@ -397,7 +392,7 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
                   </div>
 
                   <div className="flex items-center gap-4 self-end sm:self-auto mt-2 sm:mt-0">
-                    <NilaiSelector mkId={mk.id} currentNilai={nilaiMap[mk.id] ?? null} onChange={handleNilai} />
+                    <NilaiSelector mkId={mk.id} currentNilai={nilaiMap[mk.id] !== undefined ? nilaiMap[mk.id] : (mk.nilai ?? null)} onChange={handleNilai} />
                     
                     <button
                       onClick={() => isDraft ? handleRemoveDraft(mk.id) : handleDeleteKRS(mk.id)}

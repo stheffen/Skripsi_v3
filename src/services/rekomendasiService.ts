@@ -172,32 +172,38 @@ export class RekomendasiService {
   }
 
   private static renderSaranBakat(bakat: string[], nextSemesterCourses: any[], semesterAktif: number): string[] {
-    const lines = [];
-    if (bakat.length > 0) {
-      lines.push('🎯 REKOMENDASI MATA KULIAH SPESIFIK BERBASIS MINAT:');
-      lines.push(`Sistem mendeteksi bahwa Anda unggul (nilai A/B) pada bidang: **${bakat.join('** dan **')}**.`);
-      
-      bakat.forEach(b => {
-        const matchingMK = this.filterMKByBakat(b, nextSemesterCourses);
-        const mkNames = matchingMK.map(m => m.nama);
-        
-        let saranText = '';
-        if (b === 'Matematika & Logika') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada perhitungan/analitik.';
-        if (b === 'Pemrograman & Rekayasa Perangkat Lunak') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada pelajaran pemrograman/software.';
-        if (b === 'Sistem Basis Data & Data Mining') saranText = 'karena keunggulan Anda di bidang analisis dan pengolahan data.';
-        if (b === 'Infrastruktur & Jaringan Komputer') saranText = 'karena nilai Anda tinggi pada mata kuliah infrastruktur dan perangkat keras/jaringan.';
-        if (b === 'Multimedia & UI/UX') saranText = 'mengingat kreativitas Anda di bidang visual dan multimedia.';
+    if (bakat.length === 0) return [];
 
-        if (mkNames.length > 0) {
-          lines.push(`• Pada Semester ${semesterAktif + 1}, sebaiknya Anda mengambil mata kuliah **${mkNames.join(', ')}** ${saranText}`);
-        } else {
-          // Fallback if no specific course found for next semester
-          lines.push(`• Sangat disarankan untuk berfokus/mengambil peminatan yang berhubungan dengan **${b}** ${saranText}`);
-        }
-      });
+    const saranLines: string[] = [];
+    const validBakat: string[] = [];
+
+    bakat.forEach(b => {
+      const matchingMK = this.filterMKByBakat(b, nextSemesterCourses);
+      const mkNames = matchingMK.map(m => m.nama);
+      
+      let saranText = '';
+      if (b === 'Matematika & Logika') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada perhitungan/analitik.';
+      if (b === 'Pemrograman & Rekayasa Perangkat Lunak') saranText = 'karena nilai Anda di semester sebelumnya tinggi pada pelajaran pemrograman/software.';
+      if (b === 'Sistem Basis Data & Data Mining') saranText = 'karena keunggulan Anda di bidang analisis dan pengolahan data.';
+      if (b === 'Infrastruktur & Jaringan Komputer') saranText = 'karena nilai Anda tinggi pada mata kuliah infrastruktur dan perangkat keras/jaringan.';
+      if (b === 'Multimedia & UI/UX') saranText = 'mengingat kreativitas Anda di bidang visual dan multimedia.';
+
+      if (mkNames.length > 0) {
+        saranLines.push(`• Pada Semester ${semesterAktif + 1}, sebaiknya Anda mengambil mata kuliah **${mkNames.join(', ')}** ${saranText}`);
+        validBakat.push(b);
+      }
+    });
+
+    if (saranLines.length > 0) {
+      const lines = [];
+      lines.push('🎯 REKOMENDASI MATA KULIAH SPESIFIK BERBASIS MINAT:');
+      lines.push(`Sistem mendeteksi bahwa Anda unggul (nilai A/B) pada bidang: **${validBakat.join('** dan **')}**.`);
+      lines.push(...saranLines);
       lines.push('');
+      return lines;
     }
-    return lines;
+    
+    return [];
   }
 
   // ────────────────────────────────────────────────────────────────────────
