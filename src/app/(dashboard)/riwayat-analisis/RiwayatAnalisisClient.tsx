@@ -107,11 +107,13 @@ export default function RiwayatAnalisisClient({ riwayatData }: { riwayatData: an
     return {
       ...item,
       mk_bermasalah_detail: (parsedDetail as any)?.input?.mkDetail || [],
+      total_sks_tempuh: parsedDetail?.total_sks_tempuh || item.total_sks_tempuh || 0,
+      total_sks_lulus: parsedDetail?.total_sks_lulus || item.total_sks_lulus || 0,
     };
   });
 
   const trendData = [...riwayat]
-    .reverse()
+    .sort((a, b) => a.semester - b.semester) // Urutkan murni berdasarkan semester dari kecil ke besar
     .map((item, i) => ({
       name: `Sem ${item.semester}`,
       idx: i + 1,

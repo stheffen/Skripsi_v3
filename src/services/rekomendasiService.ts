@@ -1,3 +1,5 @@
+import { PRASYARAT_MK } from '@/lib/prasyarat';
+
 export class RekomendasiService {
   static buat(
     kategori: string,
@@ -94,7 +96,17 @@ export class RekomendasiService {
     }
 
     if (mkBermasalah > 0) {
-      const sortedUlang = [...mkDetail].sort((a, b) => (a.nilai === 'E' ? -1 : 1));
+      const getPriorityScore = (mk: any) => {
+        let score = 0;
+        // Prioritas utama: MK yang menjadi prasyarat untuk MK lain di masa depan
+        const isPrerequisiteForOthers = Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode));
+        if (isPrerequisiteForOthers) score += 100;
+        // Prioritas kedua: Nilai E wajib diulang dibanding D
+        if (mk.nilai === 'E') score += 50;
+        return score;
+      };
+
+      const sortedUlang = [...mkDetail].sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
       for (const mk of sortedUlang) {
         if (remainingSks >= mk.sks) {
           mkUlangToTake.push(mk);

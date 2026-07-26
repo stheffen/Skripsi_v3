@@ -77,7 +77,7 @@ export async function getRiwayatAnalisis(userId: number) {
         rekomendasi: true,
         created_at: true,
         updated_at: true,
-        // detail_fuzzy intentionally excluded — too large for list view
+        detail_fuzzy: true, // Dibutuhkan untuk SKS Tempuh dan Lulus
       },
     });
     return { data: riwayat };

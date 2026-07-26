@@ -17,7 +17,7 @@ const NILAI_COLORS: Record<string, string> = {
 const PREREQUISITES: Record<string, string[]> = {
   'TIKK205': ['TIKK102'], // Bahasa Inggris II -> Bahasa Inggris I
   'TIKK206': ['TIKK103'], // Kalkulus II -> Kalkulus I
-  'TIKK203': ['TIKK105'], // Struktur Data -> Logika Pemrograman
+  'TIKK203': ['TIKK104', 'TIKK105'], // Struktur Data -> Algoritma Pemrograman & Logika Pemrograman
   
   'TIKK310': ['TIKK101'], // Matematika Diskrit -> Aljabar Linear
   'TIKB306': ['TIKK208'], // APSI -> SIM
@@ -28,8 +28,11 @@ const PREREQUISITES: Record<string, string[]> = {
   'TIKB512': ['TIKB408'], // Pemrograman Visual Lanjutan -> Pemrograman Visual
   
   'TIKB614': ['TIKK513'], // Kerja Praktek -> Metodologi Penelitian
-  
   'TIBB803': ['TIKK513'], // Skripsi -> Metodologi Penelitian
+
+  'TIKP705': ['TIKB616'], // Jaringan Komputer Lanjutan -> Jaringan Komputer
+  'TIKB307': ['TIKB204'], // Aplikasi Basis Data Dasar -> Sistem Basis Data
+  'TIKB408': ['TIKB305'], // Pemrograman Visual -> Pemrograman Berorientasi Objek
 };
 
 function NilaiSelector({ mkId, currentNilai, onChange }: any) {
@@ -215,15 +218,27 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
 
   const isSksExceeded = currentTotalSks > maxAllowedSks;
   
-  const isPrerequisitePassed = (mkKode: string) => {
+  const checkPrerequisite = (mkKode: string) => {
     const reqs = PREREQUISITES[mkKode];
-    if (!reqs || reqs.length === 0) return true;
+    if (!reqs || reqs.length === 0) return { passed: true, missing: [] };
     
-    // Check if user passed ALL prerequisites (Nilai A, B, C, or D)
-    return reqs.every(reqKode => {
+    const missing: string[] = [];
+    for (const reqKode of reqs) {
+      // Cek apakah sudah lulus
       const attempts = allMKs.filter((m: any) => m.kode === reqKode);
-      return attempts.some((a: any) => a.sudah_registrasi && a.nilai && ['A', 'B', 'C', 'D'].includes(a.nilai));
-    });
+      const isPassed = attempts.some((a: any) => a.sudah_registrasi && a.nilai && ['A', 'B', 'C', 'D'].includes(a.nilai));
+      
+      // Cek apakah sedang diambil di KRS ini (draft atau sudah masuk currentKRS/combinedList)
+      const isCurrentKrs = combinedList.some((m: any) => m.kode === reqKode) || draftMKs.some((m: any) => m.kode === reqKode);
+      
+      if (!isPassed && !isCurrentKrs) {
+        // Cari nama matkul untuk pesan error
+        const reqMkName = allMKs.find((m: any) => m.kode === reqKode)?.nama || reqKode;
+        missing.push(reqMkName);
+      }
+    }
+    
+    return { passed: missing.length === 0, missing };
   };
 
   // We need unique courses to display in the modal
@@ -246,8 +261,8 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
     const isCurriculumGanjil = mk.semester % 2 !== 0;
     if (isActiveSemGanjil !== isCurriculumGanjil) return false;
 
-    // 2. Aturan Prasyarat (Prerequisites)
-    if (!isPrerequisitePassed(mk.kode)) return false;
+    // 2. Tidak lagi difilter keluar, tapi ditambahkan flag prerequisite_info
+    mk.prerequisite_info = checkPrerequisite(mk.kode);
 
     // 3. Status Pengambilan
     const isRegisteredInActiveSem = mk.all_attempts.some((a: any) => a.sudah_registrasi && currentKRS.find((c: any) => c.id === a.id));
@@ -445,15 +460,16 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
                       {groupedModalMKs[sem].map((mk: any) => {
                         const isSelected = !!selectedInModal[mk.id];
                         return (
-                          <label key={mk.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-blue-50 border-blue-300 dark:bg-blue-500/10 dark:border-blue-500/30' : 'bg-white dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'}`}>
+                          <label key={mk.id} className={`flex items-start gap-3 p-3 rounded-xl border transition ${!mk.prerequisite_info.passed ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-900 border-slate-200' : isSelected ? 'bg-blue-50 border-blue-300 dark:bg-blue-500/10 dark:border-blue-500/30 cursor-pointer' : 'bg-white dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer'}`}>
                             <input
                               type="checkbox"
                               checked={isSelected}
+                              disabled={!mk.prerequisite_info.passed}
                               onChange={(e) => setSelectedInModal(prev => ({...prev, [mk.id]: e.target.checked}))}
-                              className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 accent-blue-600 dark:accent-blue-500"
+                              className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 accent-blue-600 dark:accent-blue-500 disabled:opacity-50"
                             />
-                            <div>
-                              <div className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{mk.nama}</p>
                                 {mk.all_attempts.some((a: any) => a.sudah_registrasi) && (
                                   <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
@@ -466,6 +482,12 @@ export default function RegistrasiMKClient({ user, mkPerSemester, statHistory }:
                                 <span>&bull;</span>
                                 <span>{mk.sks} SKS</span>
                               </div>
+                              {!mk.prerequisite_info.passed && (
+                                <p className="text-[11px] text-red-500 mt-1.5 font-medium flex items-start gap-1">
+                                  <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+                                  <span>Syarat belum lulus/diambil: {mk.prerequisite_info.missing.join(', ')}</span>
+                                </p>
+                              )}
                             </div>
                           </label>
                         );
