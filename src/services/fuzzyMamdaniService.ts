@@ -49,9 +49,9 @@ export function fuzzifikasiIPK(ipk: number) {
 
 export function fuzzifikasiMKBermasalah(mk: number) {
   return {
-    sedikit: trapezoidLeft(mk, 1.0, 3.0),
-    sedang: triangle(mk, 1.0, 4.0, 7.0),
-    banyak: trapezoidRight(mk, 5.0, 8.0),
+    sedikit: trapezoidLeft(mk, 2.0, 4.0),
+    sedang: triangle(mk, 2.0, 4.0, 6.0),
+    banyak: trapezoidRight(mk, 4.0, 6.0),
   };
 }
 
