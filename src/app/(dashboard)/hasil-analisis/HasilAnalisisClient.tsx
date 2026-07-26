@@ -12,9 +12,12 @@ import {
   TriangleAlert,
   BookX,
   BookOpen,
+  Lightbulb,
+  ShieldAlert,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { hitungAnalisisRisiko } from "@/app/actions/analisis";
+import { PRASYARAT_MK } from "@/lib/prasyarat";
 
 const HasilRadarChart = dynamic(
   () => import("@/components/charts/HasilRadarChart"),
@@ -76,6 +79,15 @@ function MembershipBar({ label, value, color }: any) {
 
 function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
   if (!mkDetail || mkDetail.length === 0) return null;
+
+  const getPriority = (mk: any) => {
+    const isPrereq = Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode));
+    if (isPrereq) return 2;
+    if (mk.nilai === 'E') return 1;
+    return 0;
+  };
+  const sorted = [...mkDetail].sort((a, b) => getPriority(b) - getPriority(a));
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
       <table className="w-full text-xs">
@@ -96,40 +108,97 @@ function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
             <th className="text-center px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">
               Sem
             </th>
+            <th className="text-left px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">
+              Prioritas
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-          {mkDetail.map((mk, i) => (
-            <tr
-              key={i}
-              className={`transition hover:bg-slate-100 dark:hover:bg-slate-800/30 ${mk.nilai === "E" ? "bg-red-50 dark:bg-red-500/5" : "bg-orange-50 dark:bg-orange-500/5"}`}
-            >
-              <td className="px-3 py-2 font-mono text-slate-600 dark:text-slate-400">
-                {mk.kode}
-              </td>
-              <td className="px-3 py-2 text-slate-900 dark:text-slate-300">
-                {mk.nama}
-              </td>
-              <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400">
-                {mk.sks}
-              </td>
-              <td className="px-3 py-2 text-center">
-                <span
-                  className={`font-bold px-2 py-0.5 rounded-lg ${mk.nilai === "E" ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300" : "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300"}`}
-                >
-                  {mk.nilai}
-                </span>
-              </td>
-              <td className="px-3 py-2 text-center text-slate-500">
-                {mk.semester}
-              </td>
-            </tr>
-          ))}
+          {sorted.map((mk, i) => {
+            const isPrereq = Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode));
+            return (
+              <tr
+                key={i}
+                className={`transition hover:bg-slate-100 dark:hover:bg-slate-800/30 ${mk.nilai === "E" ? "bg-red-50 dark:bg-red-500/5" : "bg-orange-50 dark:bg-orange-500/5"}`}
+              >
+                <td className="px-3 py-2 font-mono text-slate-600 dark:text-slate-400">
+                  {mk.kode}
+                </td>
+                <td className="px-3 py-2 text-slate-900 dark:text-slate-300">
+                  {mk.nama}
+                </td>
+                <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400">
+                  {mk.sks}
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <span
+                    className={`font-bold px-2 py-0.5 rounded-lg ${mk.nilai === "E" ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300" : "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300"}`}
+                  >
+                    {mk.nilai}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-center text-slate-500">
+                  {mk.semester}
+                </td>
+                <td className="px-3 py-2">
+                  {isPrereq ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30">
+                      <ShieldAlert size={9} /> PRASYARAT
+                    </span>
+                  ) : mk.nilai === 'E' ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300 border border-red-300 dark:border-red-500/30">
+                      UTAMA
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Perlu Diulang</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 }
+
+function RekomendasiSection({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return null;
+  const lines = text.split('\n').filter(Boolean);
+  const cleanLine = (line: string) => line.replace(/\*\*/g, '');
+  const displayed = expanded ? lines : lines.slice(0, 6);
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
+      <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-4 text-sm flex items-center gap-2">
+        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+        Rekomendasi Sistem Pakar
+      </h3>
+      <div className="space-y-1.5">
+        {displayed.map((line, i) => {
+          const isHeader = line.includes('STATUS') || line.includes('ANALISIS') || line.includes('STRATEGI') || line.includes('RENCANA') || line.includes('SARAN') || line.includes('PENCAPAIAN') || line.includes('PENGEMBANGAN') || line.includes('REKOMENDASI') || line.includes('MATA KULIAH');
+          return (
+            <p key={i} className={`text-xs leading-relaxed ${
+              isHeader
+                ? 'font-semibold text-slate-700 dark:text-slate-300 mt-3 first:mt-0'
+                : 'text-slate-600 dark:text-slate-400 pl-1'
+            }`}>{cleanLine(line)}</p>
+          );
+        })}
+      </div>
+      {lines.length > 6 && (
+        <button
+          onClick={() => setExpanded(p => !p)}
+          className="mt-3 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition flex items-center gap-1"
+        >
+          {expanded ? <><ChevronUp size={13} /> Sembunyikan</> : <><ChevronDown size={13} /> Tampilkan semua ({lines.length - 6} baris lagi)</>}
+        </button>
+      )}
+    </div>
+  );
+}
+
 
 function MKBelumDiambilTable({ mkList }: { mkList: any[] }) {
   const [showAll, setShowAll] = useState(false);
@@ -579,6 +648,11 @@ export default function HasilAnalisisClient({
               </h3>
               <MKBermasalahTable mkDetail={result.mk_bermasalah_detail} />
             </div>
+          )}
+
+          {/* Rekomendasi Sistem Pakar */}
+          {result.rekomendasi && (
+            <RekomendasiSection text={result.rekomendasi} />
           )}
 
           {/* MK Belum Diambil */}
