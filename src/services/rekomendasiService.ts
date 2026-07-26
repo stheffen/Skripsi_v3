@@ -222,8 +222,16 @@ export class RekomendasiService {
 
     if (mkDetail.length > 0) {
       lines.push('❌ MATA KULIAH YANG PERLU PERHATIAN (D/E):');
-      for (const mk of mkDetail) {
-        const prioritas = mk.nilai === 'E' ? '[PRIORITAS UTAMA]' : '[Perlu Diulang]';
+      const getPriorityScore = (mk: any) => {
+        let score = 0;
+        if (Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode))) score += 100;
+        if (mk.nilai === 'E') score += 50;
+        return score;
+      };
+      const sortedDetail = [...mkDetail].sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+      for (const mk of sortedDetail) {
+        const isPrerequisite = Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode));
+        const prioritas = isPrerequisite ? '[PRIORITAS PAKAR: PRASYARAT]' : (mk.nilai === 'E' ? '[PRIORITAS UTAMA]' : '[Perlu Diulang]');
         lines.push(`• ${prioritas} ${mk.nama} (${mk.kode}) — Nilai: ${mk.nilai} — ${mk.sks} SKS — Sem ${mk.semester}`);
       }
       lines.push('');
@@ -255,8 +263,17 @@ export class RekomendasiService {
 
     if (mkDetail.length > 0) {
       lines.push('📋 MATA KULIAH YANG PERLU DIPERBAIKI (D/E):');
-      for (const mk of mkDetail) {
-        lines.push(`• ${mk.nama} (${mk.kode}) — Nilai: ${mk.nilai} — ${mk.sks} SKS — Sem ${mk.semester}`);
+      const getPriorityScore = (mk: any) => {
+        let score = 0;
+        if (Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode))) score += 100;
+        if (mk.nilai === 'E') score += 50;
+        return score;
+      };
+      const sortedDetail = [...mkDetail].sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+      for (const mk of sortedDetail) {
+        const isPrerequisite = Object.values(PRASYARAT_MK).some(reqs => reqs.includes(mk.kode));
+        const prioritas = isPrerequisite ? '[PRIORITAS PAKAR: PRASYARAT]' : (mk.nilai === 'E' ? '[PRIORITAS UTAMA]' : '[Perlu Diulang]');
+        lines.push(`• ${prioritas} ${mk.nama} (${mk.kode}) — Nilai: ${mk.nilai} — ${mk.sks} SKS — Sem ${mk.semester}`);
       }
       lines.push('');
     }

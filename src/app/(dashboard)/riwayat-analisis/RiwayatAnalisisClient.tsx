@@ -68,12 +68,13 @@ function MKBermasalahTable({ mkDetail }: { mkDetail: any[] }) {
 function RekomendasiRingkas({ text, expanded }: { text: string, expanded: boolean }) {
   if (!text) return null;
   const lines = text.split('\n').filter(Boolean);
+  const cleanLine = (line: string) => line.replace(/\*\*/g, '');
 
   if (!expanded) {
     return (
       <div className="space-y-1">
         {lines.slice(0, 4).map((line, i) => (
-          <p key={i} className="text-xs text-slate-400 leading-relaxed">{line}</p>
+          <p key={i} className="text-xs text-slate-400 leading-relaxed">{cleanLine(line)}</p>
         ))}
         {lines.length > 4 && (
           <p className="text-xs text-slate-600 italic">... dan {lines.length - 4} baris lagi</p>
@@ -87,7 +88,7 @@ function RekomendasiRingkas({ text, expanded }: { text: string, expanded: boolea
       {lines.map((line, i) => (
         <p key={i} className={`text-xs leading-relaxed ${
           line.includes('STATUS') ? 'font-semibold text-slate-300' : 'text-slate-400'
-        }`}>{line}</p>
+        }`}>{cleanLine(line)}</p>
       ))}
     </div>
   );

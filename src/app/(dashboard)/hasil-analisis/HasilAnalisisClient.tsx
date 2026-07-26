@@ -248,7 +248,7 @@ function MKBelumDiambilTable({ mkList }: { mkList: any[] }) {
           </tbody>
         </table>
       </div>
-
+      {/*}
       {mkList.length > 10 && (
         <button
           onClick={() => setShowAll(!showAll)}
@@ -266,6 +266,7 @@ function MKBelumDiambilTable({ mkList }: { mkList: any[] }) {
           )}
         </button>
       )}
+        */}
     </div>
   );
 }
@@ -468,7 +469,7 @@ export default function HasilAnalisisClient({
             {fuzzyDetail?.fuzzifikasi && (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-sm">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-200 mb-5 text-sm flex items-center gap-2">
-                  <div className= "w-2.5 h-2.5 bg-blue-500 rounded-full" />{" "}
+                  <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />{" "}
                   Fuzzifikasi Input
                 </h3>
                 <div className="space-y-6">
