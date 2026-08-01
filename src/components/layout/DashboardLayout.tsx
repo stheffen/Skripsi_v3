@@ -6,11 +6,25 @@ import { Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session } = useSession();
   const user = session?.user;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Guard: mahasiswa tanpa PA diarahkan ke /pilih-pa
+    if (
+      user?.role === 'mahasiswa' &&
+      user?.has_pa === false &&
+      pathname !== '/pilih-pa'
+    ) {
+      router.replace('/pilih-pa');
+    }
+  }, [user, pathname, router]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">

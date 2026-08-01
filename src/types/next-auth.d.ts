@@ -10,6 +10,7 @@ declare module "next-auth" {
       nim?: string | null;
       semester_aktif?: number | null;
       angkatan?: string | null;
+      has_pa: boolean;
     };
   }
 
@@ -21,6 +22,7 @@ declare module "next-auth" {
     nim?: string | null;
     semester_aktif?: number | null;
     angkatan?: string | null;
+    has_pa?: boolean;
   }
 }
 
@@ -31,5 +33,6 @@ declare module "next-auth/jwt" {
     nim?: string | null;
     semester_aktif?: number | null;
     angkatan?: string | null;
+    has_pa?: boolean;
   }
 }

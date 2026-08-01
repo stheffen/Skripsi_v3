@@ -38,6 +38,15 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Password salah");
         }
 
+        // Cek apakah mahasiswa sudah punya PA
+        let has_pa = true;
+        if (user.role === 'mahasiswa') {
+          const paRelation = await prisma.dosenMahasiswa.findFirst({
+            where: { mahasiswa_id: user.id }
+          });
+          has_pa = !!paRelation;
+        }
+
         return {
           id: user.id.toString(),
           name: user.name,
@@ -46,6 +55,7 @@ export const authOptions: NextAuthOptions = {
           nim: user.nim,
           semester_aktif: user.semester_aktif,
           angkatan: user.angkatan,
+          has_pa,
         };
       }
     })
@@ -57,6 +67,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.nim = user.nim;
         token.angkatan = (user as any).angkatan;
+        token.has_pa = (user as any).has_pa;
         
         // Kalkulasi otomatis semester aktif untuk mahasiswa
         if (user.role === 'mahasiswa') {
@@ -70,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         if (session.name !== undefined) token.name = session.name;
         if (session.nim !== undefined) token.nim = session.nim;
         if (session.semester_aktif !== undefined) token.semester_aktif = session.semester_aktif;
+        if (session.has_pa !== undefined) token.has_pa = session.has_pa;
         if (session.angkatan !== undefined) {
           token.angkatan = session.angkatan;
           if (token.role === 'mahasiswa') {
@@ -89,6 +101,7 @@ export const authOptions: NextAuthOptions = {
           nim: token.nim as string | null,
           semester_aktif: token.semester_aktif as number | null,
           angkatan: token.angkatan as string | null,
+          has_pa: token.has_pa as boolean,
         };
       }
       return session;

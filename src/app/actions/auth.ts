@@ -39,18 +39,29 @@ export async function registerUser(formData: FormData) {
         }
       }
       
+      // Validasi wajib: Dosen PA harus dipilih
+      const dosenId = formData.get("dosen_id");
+      if (!dosenId || dosenId === "") {
+        return { error: "Dosen Pembimbing Akademik (PA) wajib dipilih saat registrasi" };
+      }
+
+      // Pastikan dosen yang dipilih benar-benar ada dan berstatus dosen
+      const dosenExists = await prisma.user.findFirst({
+        where: { id: parseInt(dosenId as string, 10), role: 'dosen' }
+      });
+      if (!dosenExists) {
+        return { error: "Dosen PA yang dipilih tidak valid" };
+      }
+      
       data.nim = nim;
       data.angkatan = formData.get("angkatan") as string;
       data.semester_aktif = hitungSemesterAktif(data.angkatan);
       
-      const dosenId = formData.get("dosen_id");
-      if (dosenId) {
-        data.mahasiswaBimbingan = {
-          create: {
-            dosen_id: parseInt(dosenId as string, 10)
-          }
-        };
-      }
+      data.mahasiswaBimbingan = {
+        create: {
+          dosen_id: parseInt(dosenId as string, 10)
+        }
+      };
     }
 
     const user = await prisma.user.create({ data });

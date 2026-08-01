@@ -152,48 +152,30 @@ export async function getDosenMahasiswaList(dosenId: number) {
   }
 }
 
-export async function getAvailableMahasiswa(dosenId: number) {
+// Fungsi ini dihapus - dosen tidak lagi bisa menambah mahasiswa secara sepihak.
+// Mahasiswa harus memilih PA sendiri saat registrasi atau melalui halaman /pilih-pa.
+
+/** Mahasiswa tanpa PA (lama/dilepas) memilih PA baru secara langsung */
+export async function pilihDosenPA(mahasiswaId: number, dosenId: number) {
   try {
-    const dmMaps = await prisma.dosenMahasiswa.findMany({
-      where: { dosen_id: dosenId },
-      select: { mahasiswa_id: true }
+    // Pastikan mahasiswa belum punya PA
+    const existing = await prisma.dosenMahasiswa.findFirst({
+      where: { mahasiswa_id: mahasiswaId }
     });
-    
-    const assignedIds = dmMaps.map((dm: any) => dm.mahasiswa_id);
-
-    const available = await prisma.user.findMany({
-      where: {
-        role: 'mahasiswa',
-        id: { notIn: assignedIds }
-      },
-      select: {
-        id: true,
-        name: true,
-        nim: true,
-        semester_aktif: true
-      },
-      orderBy: { name: 'asc' }
-    });
-
-    return { success: true, data: available };
-  } catch (error: any) {
-    return { error: "Gagal memuat mahasiswa tersedia" };
-  }
-}
-
-export async function addMahasiswaBimbingan(dosenId: number, mahasiswaIds: number[]) {
-  try {
-    const data = mahasiswaIds.map(id => ({
-      dosen_id: dosenId,
-      mahasiswa_id: id,
-    }));
-    await prisma.dosenMahasiswa.createMany({
-      data,
-      skipDuplicates: true,
+    if (existing) {
+      return { error: "Anda sudah memiliki Dosen PA. Gunakan fitur Ganti PA di halaman Profil." };
+    }
+    // Pastikan dosen valid
+    const dosen = await prisma.user.findFirst({ where: { id: dosenId, role: 'dosen' } });
+    if (!dosen) {
+      return { error: "Dosen yang dipilih tidak valid." };
+    }
+    await prisma.dosenMahasiswa.create({
+      data: { dosen_id: dosenId, mahasiswa_id: mahasiswaId }
     });
     return { success: true };
   } catch (error: any) {
-    return { error: "Gagal menambahkan mahasiswa" };
+    return { error: error.message || "Gagal memilih Dosen PA" };
   }
 }
 
